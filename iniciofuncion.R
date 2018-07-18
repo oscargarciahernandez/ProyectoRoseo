@@ -789,7 +789,7 @@ for(i in 1:length(disp[,1])){
   
 }
 clean_data_list<-lapply(dt_list, clean_data, fechainicio= fechaini)
-list.save(clean_data, "C:/TFG/appshiny/Datasets/cleandata.rdata")
+list.save(clean_data_list, "C:/TFG/appshiny/Datasets/cleandata.rdata")
 clean_data_list<- list.load("C:/TFG/appshiny/Datasets/cleandata.rdata")
 
 
@@ -1309,3 +1309,8 @@ names(dt_sum_list)<- name_list
 ### Nuestros datos validos se seguiran
 list.save(dt_sum_list, "C:/TFG/appshiny/Datasets/cleandata.rdata")
 actualized_datasets<- list.load("C:/TFG/appshiny/Datasets/cleandata.rdata")
+
+
+list.save(actualized_datasets,"C:/TFG/appshiny/Rprojecto/ProyectoRoseo/RoseoDashboard/Data/datasets.rdata")
+
+
