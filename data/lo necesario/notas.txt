@@ -1,0 +1,5 @@
+Tener en cuenta:
+
+- que eliminar el primer dato de RPM porque sale un valor raro. 
+- Los datos de velocidad del viento se dan de manera continua durante todo el experimento
+por lo tanto se hace una media y a tomar por culo. 
