@@ -10,11 +10,17 @@ procesador <- function(path_to_csv){
   path_to_speed <- paste(path_to_speed,"Vviento.txt",sep = '/')
   
   if(!file.exists(path_to_speed_mean)){
+    
     speed_mean <- mean(read.table(path_to_speed)[,1])
     write.table(speed_mean,file = path_to_speed_mean)
   }else{
     speed_mean<- read.table(path_to_speed_mean)
+    if(is.na(speed_mean)){
+    speed_mean <- mean(read.table(path_to_speed)[,1])
+    write.table(speed_mean,file = path_to_speed_mean) 
+    } else{
     speed_mean <- speed_mean[1,1]
+    }
   }
   
   
@@ -28,7 +34,7 @@ procesador <- function(path_to_csv){
   
   ##introduzco las velocidades del experimento piloto: Vel
   processed_file <-as.data.frame( cbind(rpm[1],speed_mean, volts_amps[1], volts_amps[2]))
-  names(z)<- c("RPM","m/s","V", "A")
+  names(processed_file)<- c("RPM","m/s","V", "A")
   
   return(processed_file)
 }
