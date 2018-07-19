@@ -1,26 +1,20 @@
-setwd("C:/TFG/pruebas laboratorio/concentrador/30")
-inputpaths1<-"C:/TFG/pruebas laboratorio/concentrador/30/"
+library(here)
+
+fcn_input <- 'concentrador'
+
+
 inputpaths2<- c("prueba_50/","prueba_60/","prueba_70/","prueba_80/",
                 "prueba_90/","prueba_100/")
-inputpath<-paste0(inputpaths1,inputpaths2)
 
-resistencia_50<-c(20,50,100,200,300,400,700,
-                  100,1500,3000,7000,8000)
+inputpath<-paste(data_path,fcn_input,inputpaths2, sep = '/')
 
-resistencia_60<-c(10,20,40,80,150,200,300,400,600,
-                  1000,3000,7000)
+data_path<- here('data/')
+inputpath2 <- data_path
+archivos2 <- list.files(inputpath2, pattern = 'csv', recursive = TRUE, full.names = TRUE)
 
-resistencia_70<-c(10,20,50,80,150,300,500,700,1000,
-                  3000,7000)
 
-resistencia_80<-c(10,25,50,100,150,200,250,300,500,
-                  750,100,3000,7000)
-
-resistencia_90<-c(5,20,50,75,100,150,200,300,500,
-                  800,2000,7000)
-
-resistencia_100<- c(5,15,30,50,70,100,150,200,250,300,
-                    500,750,1000,7000)
+archivos<- list.files(inputpath)
+archivos[ str_detect(archivos, 'csv')] %>% str_remove('.csv') %>% as.numeric() %>% .[order(., decreasing = TRUE)]
 
 resistencias<-list(resistencia_50,resistencia_60,resistencia_70,
                    resistencia_80,resistencia_90,
@@ -54,7 +48,7 @@ Vel<-sapply(v_viento, mean)
 experimento_piloto<-list()
 for(j in 1:length(resistencias)){
   
-  setwd(inputpath[j])
+  
   
   res_txt<-paste0(resistencias[[j]], ".txt")
   res_csv<-paste0(resistencias[[j]], ".csv")
