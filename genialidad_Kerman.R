@@ -19,6 +19,19 @@ df <- data.frame(matrix(unlist(lista_procesada),
 colnames(df) <- column_names
 df<- cbind(archivos,df)
 
+df<- df_mutate(df)
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
