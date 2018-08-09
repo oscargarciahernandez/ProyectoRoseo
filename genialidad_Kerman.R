@@ -5,7 +5,7 @@ library(dplyr)
 
 source(here('funcion_procesado.R'))
 source(here('df_mutate.R'))
-
+source(here('Ploteos_curva_CP.R'))
 data_path<- here('data/')
 archivos <- list.files(data_path, pattern = 'csv',
                         recursive = TRUE, full.names = TRUE)
@@ -22,6 +22,10 @@ df<- cbind(archivos,df)
 df<- df_mutate(df)
 
 
+## ejecutando plote_experimento(df,grado) crea una carpeta dentro de pruebas laboratorio
+## con las 5 graficas de todos los experimentos con xx grados de ajuste. 
+
+ploteo_experimento(df,6)
 
 
 

@@ -1,5 +1,10 @@
-
+library(stringr)
+library(magrittr)
+library(here)
+library(dplyr)
   
+ploteo_experimento<- function(datos,grados){
+  df<-datos
   select_groups <- function(data, groups) {
     data[sort(unlist(attr(data, "indices")[ groups ])) + 1, ]
   }
@@ -7,13 +12,13 @@
   group_number<-length(attr(group_by(df,experimento,angulo), "group"))
   for (groups_ind in 1:group_number) {
     
-    xx<-full_table %>% group_by(.,experimento,angulo) %>% select_groups(groups_ind)
+    xx<- df %>% group_by(.,experimento,angulo) %>% select_groups(groups_ind)
     nombre_1<-as.character(xx$experimento[1])
     nombre_2<-as.character(xx$angulo[1])
     nombre<-paste(nombre_1,nombre_2,sep = "_")
     
     
-   percentaje_number<-length(attr(group_by(xx,porcentaje), "group") )
+    percentaje_number<-length(attr(group_by(xx,porcentaje), "group") )
     xx_percentaje<-list()
     for (per in 1:percentaje_number) {
       xx_perc<- xx %>% group_by(.,porcentaje) %>% select_groups(per)
@@ -64,9 +69,9 @@
               indeeex[rr]<- as.numeric(i) 
               rr<-rr+1
             }  
+            
+          }
           
-        }
-        
         }
       }
       
@@ -74,23 +79,23 @@
         validacion_2<- validacion_2
       }else{
         validacion_2<-validacion_2[-indeeex,]
-        }
+      }
       
       clean_table<-rbind(validacion_1,validacion_2)
       
       
       lambda_Cp_clean[[j]]<- clean_table
       
-      }
+    }
     
     
     
     
     
     
+    dir.create(paste0("C:/TFG/pruebaslaboratorio/graficos_fit",grados,"/"))
     
-    
-    jpeg(paste0("C:/TFG/pruebaslaboratorio/graficos_fit2/",nombre,".jpeg"))
+    jpeg(paste0("C:/TFG/pruebaslaboratorio/graficos_fit",grados,"/",nombre,".jpeg"))
     lambda_Cp<- lambda_Cp_clean
     colores<- c("orange","red","blue","dodgerblue4","purple","black")
     pch_dif<-c(0:5)
@@ -101,7 +106,7 @@
       #y<- c(0,lambda_Cp[[i]][,1])
       x<- lambda_Cp[[i]][,2]
       y<- lambda_Cp[[i]][,1]
-      fit5<-lm(y~poly(x,2,raw=TRUE))
+      fit5<-lm(y~poly(x,grados,raw=TRUE))
       xx <- seq(min(x),max(x), by=0.01)
       
       plot(NULL,xlim=c(0,2),
@@ -126,6 +131,9 @@
            text.col = orden_leyenda[,4],ncol = 1,cex = 1)
     
     dev.off()
-
+    
   }
+  
+}
+
 
