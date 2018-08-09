@@ -49,3 +49,19 @@ ggplot(df, aes(x=TSR, y = cp)) +
 
 
 
+#### solventar el problema de la mala medicion del viento utilizando las velocidades del viento
+#### de la prueba piloto. 
+Vviento_piloto<- unique(df[which(df$experimento=="piloto"),][c(3,8)])
+df %<>% mutate(Vviento_estandar = ifelse(df$porcentaje==100,10.341669,
+                                         ifelse(df$porcentaje==90,9.357483,
+                                                ifelse(df$porcentaje==80,8.326538,
+                                                       ifelse(df$porcentaje==70,7.293694,
+                                                              ifelse(df$porcentaje==60,6.040875,
+                                                                     ifelse(df$porcentaje==50,5.474545,NA)))))))
+
+
+df%<>% mutate(wind_power_est = 0.5*1.2*0.27*0.45*(df$Vviento_estandar)^3,
+              TSR_est = RPM*2*pi*r/60/df$Vviento_estandar,
+              cp_est = watts_est/wind_power_est)
+
+df%<>%select(.,-watts_est)
