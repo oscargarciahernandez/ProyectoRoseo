@@ -50,3 +50,11 @@ ploteo_experimento_media(df,3)
 ### QUE ME ESTA TOCANDO LOS COJONES, NO ENCAJA CON EL AJUSTE Y QUEDA FEO EL AJUSTE. 
 ### HAY QUE CORREGIR ESE FALLITO LO ANTES POSIBLE ANTES DE ENTRAR A CALCULAR CURVAS DE POTENCIA
 ### UNIR PUNTOS DE CP_MAX Y CREAR CURVA DE POTENCIA, EJE Y(WATSS) EJE X (Vviento)
+## 1--> concentrador_30
+## 2--> concentrador_45
+## 3---> concentrador_70
+## 4--> pared
+## 5--> piloto
+
+
+ploteo_experimento_individual(df,3,1)

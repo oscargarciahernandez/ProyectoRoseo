@@ -486,3 +486,185 @@ procesador <- function(path_to_csv){
   
   return(processed_file)
 }
+ploteo_experimento_individual<- function(datos,grados,groups_ind){
+  df<-datos
+  df%<>% mutate(Vviento_media = (df$`m/s`+df$Vviento_estandar)/2)
+  df%<>% mutate(wind_power_mean = 0.5*1.2*0.27*0.45*(df$Vviento_media)^3,
+                TSR_mean = RPM*2*pi*r/60/df$Vviento_media,
+                cp_mean = watts/wind_power_mean)
+  
+  Vviento_pared<- unique(df[which(df$experimento=="pared"),][c(3,8)])
+  df %<>% mutate(Vviento_estandar_pared = ifelse(df$porcentaje==100,6.059878,
+                                           ifelse(df$porcentaje==90,5.532072,
+                                                  ifelse(df$porcentaje==80,4.973180,
+                                                         ifelse(df$porcentaje==70,4.460114,
+                                                                ifelse(df$porcentaje==60,3.869665,
+                                                                       ifelse(df$porcentaje==50,3.074220,NA)))))))
+  
+  df%<>% mutate(wind_power_pared = 0.5*1.2*0.27*0.45*(df$Vviento_estandar_pared)^3,
+                TSR_pared = RPM*2*pi*r/60/df$Vviento_estandar_pared,
+                cp_pared = watts/wind_power_pared)
+  
+  select_groups <- function(data, groups) {
+    data[sort(unlist(attr(data, "indices")[ groups ])) + 1, ]
+  }
+  
+  group_number<-length(attr(group_by(df,experimento,angulo), "group"))
+  
+    
+    xx<- df %>% group_by(.,experimento,angulo) %>% select_groups(groups_ind)
+    nombre_1<-as.character(xx$experimento[1])
+    nombre_2<-as.character(xx$angulo[1])
+    nombre<-paste(nombre_1,nombre_2,sep = "_")
+    dir.create(paste0("C:/TFG/pruebaslaboratorio/graficos_fit",grados,"_",nombre,"/"))
+    
+    percentaje_number<-length(attr(group_by(xx,porcentaje), "group") )
+    xx_percentaje_media<-list()
+    xx_percentaje_estandar<-list()
+    xx_percentaje_estandar_pared<-list()
+    xx_percentaje_lectura<-list()
+    for (per in 1:percentaje_number) {
+      xx_perc_m<- xx %>% group_by(.,porcentaje) %>% select_groups(per)
+      xx_perc_m<-cbind(xx_perc_m$cp_mean,xx_perc_m$TSR_mean,xx_perc_m$Vviento_media)
+      colnames(xx_perc_m)<- c("cp","TSR", "Vviento")
+      xx_percentaje_media[[per]]<- xx_perc_m
+      
+      xx_perc_s<- xx %>% group_by(.,porcentaje) %>% select_groups(per)
+      xx_perc_s<-cbind(xx_perc_s$cp_est,xx_perc_s$TSR_est,xx_perc_s$Vviento_estandar)
+      colnames(xx_perc_s)<- c("cp","TSR", "Vviento")
+      xx_percentaje_estandar[[per]]<- xx_perc_s
+      
+      xx_perc_sp<- xx %>% group_by(.,porcentaje) %>% select_groups(per)
+      xx_perc_sp<-cbind(xx_perc_sp$cp_pared,xx_perc_sp$TSR_pared,xx_perc_sp$Vviento_estandar_pared)
+      colnames(xx_perc_sp)<- c("cp","TSR", "Vviento")
+      xx_percentaje_estandar_pared[[per]]<- xx_perc_sp
+      
+      xx_perc_l<- xx %>% group_by(.,porcentaje) %>% select_groups(per)
+      xx_perc_l<-cbind(xx_perc_l$cp,xx_perc_l$TSR,xx_perc_l$`m/s`)
+      colnames(xx_perc_l)<- c("cp","TSR", "Vviento")
+      xx_percentaje_lectura[[per]]<- xx_perc_l
+      
+    }
+    
+    xx_data<- list(xx_percentaje_estandar,xx_percentaje_estandar_pared,
+                   xx_percentaje_lectura,xx_percentaje_media)
+    names(xx_data)<- c("xx_percentaje_estandar","xx_percentaje_estandar_pared",
+                                  "xx_percentaje_lectura","xx_percentaje_media")
+    for (ll in 1:length(xx_data)) {
+      lambda_Cp<- xx_data[[ll]]
+      lambda_Cp_clean<-list()
+      for(j in 1:length(lambda_Cp)){
+        cp_lmb<- lambda_Cp[[j]]
+        cp_lmb<-cp_lmb[order(cp_lmb[,2]),]
+        
+        
+        TSR_1<-cp_lmb[,2]
+        Cp_1<-cp_lmb[,1]
+        
+        V_tsr<- seq(0.05,max(TSR_1),by=max(TSR_1)/8)
+        TSR_2<- vector()
+        Cp_2<- vector()
+        
+        for(i in 1:length(V_tsr)){
+          
+          Cp_2[i]<- Cp_1[which.min(abs(TSR_1-V_tsr[i]))]
+          TSR_2[i]<-TSR_1[which.min(abs(TSR_1-V_tsr[i]))]
+          
+        }
+        validacion<-cbind(unique(Cp_2),unique(TSR_2))
+        validacion_1<- validacion[1:which.max(validacion[,1]),]
+        validacion_2<- validacion[(which.max(validacion[,1])+1):length(validacion[,1]),]
+        indeeex<- vector()
+        rr<- 1 
+        if(length(validacion_2)==2){
+          validacion_2<- validacion_2
+        }else{
+          for (i in 1:length(validacion_2[,1])) {
+            
+            
+            if(i==length(validacion_2[,1])){break}else{
+              
+              if(validacion_2[i,1] < validacion_2[(i+1),1]){
+                indeeex[rr]<- as.numeric(i) 
+                rr<-rr+1
+                
+                
+              }
+              
+            }
+          }
+          
+        }
+        
+        if(length(indeeex)==0){
+          validacion_2<- validacion_2
+        }else{
+          validacion_2<-validacion_2[-indeeex,]
+        }
+        
+        clean_table<-rbind(validacion_1,validacion_2)
+        
+        
+        lambda_Cp_clean[[j]]<- clean_table
+        
+      }
+      
+      
+      jpeg(paste0("C:/TFG/pruebaslaboratorio/graficos_fit",grados,"_",nombre,"/",names(xx_data)[[ll]],".jpeg"))
+      lambda_Cp<- lambda_Cp_clean
+      colores<- c("orange","red","blue","dodgerblue4","purple","black")
+      pch_dif<-c(0:5)
+      ###establecemos xlim e ylim
+      lim_y<- (max(unlist(lapply(xx_data[[ll]],"[",,1))) + (0.02))
+      lim_x<- (max(unlist(lapply(xx_data[[ll]],"[",,2)))+ (0.2))
+      
+      
+      for(i in 1:length(lambda_Cp)){
+        #en caso de que sea mejor añadir el origen
+        #x<- c(0,lambda_Cp[[i]][,2])
+        #y<- c(0,lambda_Cp[[i]][,1])
+        x<- lambda_Cp[[i]][,2]
+        y<- lambda_Cp[[i]][,1]
+        fit5<-lm(y~poly(x,grados,raw=TRUE))
+        xx <- seq(min(x),max(x), by=0.01)
+        
+        plot(NULL,xlim=c(0,lim_x),
+             ylim = c(0,lim_y),cex=0.005, yaxt ="n",
+             xlab = "TSR", ylab = "Cp", bty='L')
+        par(new=T)
+        lines(xx, predict(fit5, data.frame(x=xx)), col=colores[i],lwd=2)
+        cp_max<-max(predict(fit5, data.frame(x=xx)))
+        lambda_max<- xx[which.max(predict(fit5, data.frame(x=xx)))]
+        points(x,y, pch= pch_dif[i])
+        par(new=T)
+      }
+      
+      axis(2, at=seq(0,0.25, by=0.05),las=2)
+      V_viento<-sapply(xx_data[[ll]],"[",1,3)
+      
+      leyenda_veintos<-paste0(round(V_viento,digits = 2), " m/s")
+      orden_leyenda<-cbind(V_viento,leyenda_veintos,pch_dif,colores)
+      orden_leyenda<-orden_leyenda[order(as.numeric(orden_leyenda[,1]), decreasing = TRUE),]
+      
+      legend("topright", inset=c(0,0),orden_leyenda[,2],pch = as.numeric(orden_leyenda[,3]),
+             text.col = orden_leyenda[,4],ncol = 1,cex = 1)
+      
+      dev.off()
+      }
+}
+
+
+    ##lambda_cp es una tabla de dos columnas (cp,lambda) 
+   
+    
+    
+    
+    
+    
+    
+  
+    
+    
+  
+  
+
