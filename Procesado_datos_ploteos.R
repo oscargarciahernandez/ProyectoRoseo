@@ -1,4 +1,4 @@
-
+library(here)
 source(here('funciones_necesarias.R'))
 
 data_path<- here('data/')

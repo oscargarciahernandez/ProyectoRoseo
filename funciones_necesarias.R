@@ -487,6 +487,9 @@ procesador <- function(path_to_csv){
   
   return(processed_file)
 }
+select_groups <- function(data, groups) {
+  data[sort(unlist(attr(data, "indices")[ groups ])) + 1, ]
+}
 ploteo_experimento_individual<- function(datos,grados,groups_ind){
   df<-datos
   df%<>% mutate(Vviento_media = (df$`m/s`+df$Vviento_estandar)/2)
@@ -705,6 +708,7 @@ ajuste_RPM_Resistencia<- function(df){
     dev.off()
     
   }
+  return(lista_rpm_resistencia_ordenada)
 }
 
 
