@@ -58,3 +58,8 @@ ploteo_experimento_media(df,3)
 
 
 ploteo_experimento_individual(df,3,1)
+
+
+### para generar ploteos de rpm y omhnios 
+
+ajuste_RPM_Resistencia(df)

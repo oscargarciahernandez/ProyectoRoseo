@@ -2,6 +2,7 @@ library(stringr)
 library(magrittr)
 library(here)
 library(dplyr)
+library(ggplot2)
 
 df_mutate<-function(tabla_cruda){
   df<- tabla_cruda
@@ -652,6 +653,60 @@ ploteo_experimento_individual<- function(datos,grados,groups_ind){
       dev.off()
       }
 }
+ajuste_RPM_Resistencia<- function(df){
+  group_number<-length(attr(group_by(df,experimento,angulo,porcentaje), "group"))
+  
+  
+  lista_rpm_resistencia<- list()
+  nombres_lista<- vector()
+  titulos_grafico<- vector()
+  for (grupos in 1:group_number) {
+    grupos_rpm_resistencia<- df %>% group_by(.,experimento,angulo,porcentaje) %>% select_groups(grupos)
+    
+    tabla_resistencia_rpm<- as.data.frame(cbind(as.numeric(grupos_rpm_resistencia$RPM),as.data.frame(grupos_rpm_resistencia$resistencia)))
+    colnames(tabla_resistencia_rpm)<- c("RPM", "Omhnios")
+    
+    nombre_tabla<- unique(paste(grupos_rpm_resistencia$experimento,grupos_rpm_resistencia$angulo,grupos_rpm_resistencia$porcentaje,sep = "_"))
+    if(is.na(grupos_rpm_resistencia$angulo)){
+      titulo_graph<- unique(paste0(grupos_rpm_resistencia$experimento,"-",grupos_rpm_resistencia$porcentaje,"%"))
+    }else{
+      titulo_graph<- unique(paste0(grupos_rpm_resistencia$experimento,"-",grupos_rpm_resistencia$angulo,"º-",grupos_rpm_resistencia$porcentaje,"%"))
+    }
+    titulos_grafico[grupos]<- titulo_graph
+    lista_rpm_resistencia[[grupos]]<- tabla_resistencia_rpm
+    nombres_lista[grupos]<- nombre_tabla
+  }
+  
+  ordenando<- function(ordenando){
+    return(ordenando[order(as.numeric(as.character(ordenando$Omhnios))),] ) 
+  }
+  lista_rpm_resistencia_ordenada<-lapply(lista_rpm_resistencia, ordenando)
+  
+  for (pruebas in 1:length(lista_rpm_resistencia_ordenada)) {
+    dir.create(paste0("C:/TFG/pruebaslaboratorio/graficos_RPM_Resistencia/"))
+    
+    jpeg(paste0("C:/TFG/pruebaslaboratorio/graficos_RPM_Resistencia/",nombres_lista[pruebas],".jpeg"))
+    x<-as.numeric(as.character(lista_rpm_resistencia_ordenada[[pruebas]][,2]))
+    y<- as.numeric(as.character(lista_rpm_resistencia_ordenada[[pruebas]][,1]))
+    m<-nls(y~a*x/(b+x))
+    #get some estimation of goodness of fit
+    cor(y,predict(m))
+    
+    plot(NULL,xlim=c(0,max(x)),
+         ylim = c(0,max(y)),cex=0.005, yaxt ="n",
+         xlab = "Omhnios", ylab = "RPM", bty='L')
+    par(new=T)
+    lines(x,predict(m),lty=2,col="red",lwd=1)
+    points(x,y, pch= 1)
+    par(new=T)
+    text(max(x)/2,max(y)/2,labels=paste("Correlación = ",as.character(round(cor(y,predict(m)),3))))
+    axis(2, at=seq(0,max(y), by=round(max(y)/10,1)),las=2)
+    title(main = "Gráfica RPM-Resistencia", sub = paste0("Experimento = ",titulos_grafico[pruebas]))
+    dev.off()
+    
+  }
+}
+
 
 
     ##lambda_cp es una tabla de dos columnas (cp,lambda) 
