@@ -35,8 +35,14 @@ df<- df_mutate(df)
 
 ## ejecutando plote_experimento(df,grado) crea una carpeta dentro de pruebas laboratorio
 ## con las 5 graficas de todos los experimentos con xx grados de ajuste. 
+##dado que tengo un problemon con los datos de la velocidad del viento lo que se me ha ocurrido
+##es representar las graficas para tres velocidades del viento diferentes: 
+## Velocidad del viento de la prueba piloto (estandar)
+## velocidad de la lectura del anemometro (lectura)
+## velocidad del viento media, una media entre lectura y estandar... SOCORRO¡ 
 
-ploteo_experimento(df,3)
-
+ploteo_experimento_estandar(df,3)
+ploteo_experimento_lectura(df,3)
+ploteo_experimento_media(df,3)
 
 
