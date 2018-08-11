@@ -60,33 +60,14 @@ ploteo_experimento_media(df,3)
 ploteo_experimento_individual(df,3,1)
 
 
-### para generar ploteos de rpm y omhnios 
+### para generar ploteos de rpm y omhnios. a ka vez que obtengo un data.frame cob los coeficientes de ajuste a y b
+## los coeficientes se consiguen para la correlacion más alta, dado que estoy probando con dos regresiones
+## siempre hay una más acertada que otra.
+
 
 coeficientes_RPM<-ajuste_RPM_Resistencia_so(df,tablas_sin_outliers_ni_decreasing)
 coeficientes_RPM<-data.frame(matrix(unlist(coeficientes_RPM), nrow=30, byrow=T))
 names(coeficientes_RPM)<- c("Experimento","Angulo","Porcentaje","a","b")
 
-coeficientes_RPM
-head(df)
-df %<>% mutate(coef_a= -31,coef_b=-31)
-
-
-
-add_coef<-function(df,coeficientes_RPM){
-  vector_logico<- list()
-  for (i in 1:length(coeficientes_RPM[,1])) {
-    if(coeficientes_RPM[i,1]=="concentrador"){
-      vector_logico[[i]]<- c(coeficientes_RPM[i,1]==df$experimento & coeficientes_RPM[i,2]==df$angulo & coeficientes_RPM[i,3]==df$porcentaje)
-      
-    }else{
-      vector_logico[[i]]<- c(coeficientes_RPM[i,1]==df$experimento & coeficientes_RPM[i,3]==df$porcentaje)
-      
-    }
-  }
- for (j in 1:length(vector_logico)) {
-   df %<>% mutate(coef_a=replace(coef_a, vector_logico[[j]],as.numeric(as.character( coeficientes_RPM[j,4]))),
-                  coef_b=replace(coef_b, vector_logico[[j]],as.numeric(as.character( coeficientes_RPM[j,5]))))
- }
-  
-}
+### añado coeficientes a y b a la tabla df
 add_coef(df,coeficientes_RPM)
