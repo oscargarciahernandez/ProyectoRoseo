@@ -67,3 +67,26 @@ coeficientes_RPM<-data.frame(matrix(unlist(coeficientes_RPM), nrow=30, byrow=T))
 names(coeficientes_RPM)<- c("Experimento","Angulo","Porcentaje","a","b")
 
 coeficientes_RPM
+head(df)
+df %<>% mutate(coef_a= -31,coef_b=-31)
+
+
+
+add_coef<-function(df,coeficientes_RPM){
+  vector_logico<- list()
+  for (i in 1:length(coeficientes_RPM[,1])) {
+    if(coeficientes_RPM[i,1]=="concentrador"){
+      vector_logico[[i]]<- c(coeficientes_RPM[i,1]==df$experimento & coeficientes_RPM[i,2]==df$angulo & coeficientes_RPM[i,3]==df$porcentaje)
+      
+    }else{
+      vector_logico[[i]]<- c(coeficientes_RPM[i,1]==df$experimento & coeficientes_RPM[i,3]==df$porcentaje)
+      
+    }
+  }
+ for (j in 1:length(vector_logico)) {
+   df %<>% mutate(coef_a=replace(coef_a, vector_logico[[j]],as.numeric(as.character( coeficientes_RPM[j,4]))),
+                  coef_b=replace(coef_b, vector_logico[[j]],as.numeric(as.character( coeficientes_RPM[j,5]))))
+ }
+  
+}
+add_coef(df,coeficientes_RPM)
