@@ -79,3 +79,10 @@ add_coef(df,coeficientes_RPM)
 ploteo_experimento_estandar_RPM_regresion(df,3)
 ploteo_experimento_lectura_RPM_regresion(df,3)
 ploteo_experimento_media_RPM_regresion(df,3)
+
+
+
+
+
+
+ploteo_experimento_estandar_RPM_regresion_CPmax(df,2)
