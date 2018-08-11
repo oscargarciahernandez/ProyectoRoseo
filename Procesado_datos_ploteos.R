@@ -62,4 +62,8 @@ ploteo_experimento_individual(df,3,1)
 
 ### para generar ploteos de rpm y omhnios 
 
-ajuste_RPM_Resistencia_so(df,tablas_sin_outliers_ni_decreasing)
+coeficientes_RPM<-ajuste_RPM_Resistencia_so(df,tablas_sin_outliers_ni_decreasing)
+coeficientes_RPM<-data.frame(matrix(unlist(coeficientes_RPM), nrow=30, byrow=T))
+names(coeficientes_RPM)<- c("Experimento","Angulo","Porcentaje","a","b")
+
+coeficientes_RPM

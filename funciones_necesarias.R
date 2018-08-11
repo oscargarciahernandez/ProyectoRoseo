@@ -720,6 +720,7 @@ ajuste_RPM_Resistencia_so<- function(df,tabla_sinout){
   lista_rpm_resistencia<- list()
   nombres_lista<- vector()
   titulos_grafico<- vector()
+  tabladenombres<- matrix(-31,ncol = 3, nrow = group_number)
   for (grupos in 1:group_number) {
     grupos_rpm_resistencia<- df %>% group_by(.,experimento,angulo,porcentaje) %>% select_groups(grupos)
     
@@ -727,6 +728,7 @@ ajuste_RPM_Resistencia_so<- function(df,tabla_sinout){
     colnames(tabla_resistencia_rpm)<- c("RPM", "Omhnios")
     
     nombre_tabla<- unique(paste(grupos_rpm_resistencia$experimento,grupos_rpm_resistencia$angulo,grupos_rpm_resistencia$porcentaje,sep = "_"))
+    
     if(is.na(grupos_rpm_resistencia$angulo)){
       titulo_graph<- unique(paste0(grupos_rpm_resistencia$experimento,"-",grupos_rpm_resistencia$porcentaje,"%"))
     }else{
@@ -735,6 +737,9 @@ ajuste_RPM_Resistencia_so<- function(df,tabla_sinout){
     titulos_grafico[grupos]<- titulo_graph
     lista_rpm_resistencia[[grupos]]<- tabla_resistencia_rpm
     nombres_lista[grupos]<- nombre_tabla
+    tabladenombres[grupos,1]<-as.character(grupos_rpm_resistencia$experimento[1])
+    tabladenombres[grupos,2]<- as.character(grupos_rpm_resistencia$angulo[1])
+    tabladenombres[grupos,3]<- as.character(grupos_rpm_resistencia$porcentaje[1])
   }
   
   ordenando<- function(ordenando){
@@ -742,6 +747,8 @@ ajuste_RPM_Resistencia_so<- function(df,tabla_sinout){
   }
   lista_rpm_resistencia_ordenada<-lapply(lista_rpm_resistencia, ordenando)
   
+  
+  lista_coef<-list()
   for (pruebas in 1:length(lista_rpm_resistencia_ordenada)) {
     dir.create(paste0("C:/TFG/pruebaslaboratorio/graficos_RPM_Resistencia_sinout/"))
     
@@ -835,9 +842,27 @@ ajuste_RPM_Resistencia_so<- function(df,tabla_sinout){
            col = c("blue","red","black","red"),ncol = 1,cex = 1)
     
         dev.off()
-
+        
+        correlacion_sino<-cor(y_so,predict(m_so))
+        correlacion_cono<-cor(y,predict(m))
+        if(correlacion_sino>= correlacion_cono){
+          aa<- coefa_so
+          bb<- coefb_so
+        }else{
+          aa<- coefa
+          bb<-coefb
+        }
+        
+        coef_tabla<- cbind(as.character(tabladenombres[pruebas,1]),as.character(tabladenombres[pruebas,2]),
+                           as.character(tabladenombres[pruebas,3]),aa,bb)  
+        names(coef_tabla)<-c("Experimento","Angulo","Porcentaje","a","b")
+        
+      lista_coef[[pruebas]]<-coef_tabla
+        
   }
 
+ return(lista_coef) 
+  
 }
 
 
