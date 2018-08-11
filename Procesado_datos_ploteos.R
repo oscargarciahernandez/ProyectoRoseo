@@ -62,4 +62,4 @@ ploteo_experimento_individual(df,3,1)
 
 ### para generar ploteos de rpm y omhnios 
 
-ajuste_RPM_Resistencia(df)
+ajuste_RPM_Resistencia_so(df,tablas_sin_outliers_ni_decreasing)
