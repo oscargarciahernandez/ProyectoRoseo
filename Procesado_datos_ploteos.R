@@ -69,5 +69,13 @@ coeficientes_RPM<-ajuste_RPM_Resistencia_so(df,tablas_sin_outliers_ni_decreasing
 coeficientes_RPM<-data.frame(matrix(unlist(coeficientes_RPM), nrow=30, byrow=T))
 names(coeficientes_RPM)<- c("Experimento","Angulo","Porcentaje","a","b")
 
-### añado coeficientes a y b a la tabla df
+### añado coeficientes a y b a la tabla df y calcular RPM segun regresion y TSR_vientoestandar y TSR_lectura
+
 add_coef(df,coeficientes_RPM)
+
+
+
+###obtencion de las graficas empleando la velocidad de giro aplicando la regresion para estandar,lectura y media
+ploteo_experimento_estandar_RPM_regresion(df,3)
+ploteo_experimento_lectura_RPM_regresion(df,3)
+ploteo_experimento_media_RPM_regresion(df,3)
