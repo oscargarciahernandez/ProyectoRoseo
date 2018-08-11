@@ -785,10 +785,9 @@ ajuste_RPM_Resistencia_so<- function(df,tabla_sinout){
     
     
     
-    
     plot(NULL,xlim=c(0,8000),
          ylim = c(0,(max(y_so_seq)+(max(y_so_seq))/5)),cex=0.005, yaxt ="n",
-         xlab = "Omhnios", ylab = "RPM", bty='L')
+         xlab =  expression(paste("Resistencia (",Omega,")")), ylab = "Velocidad Angular (RPM)", bty='L')
     par(new=T)
     #lines(x,predict(m),lty=2,col="red",lwd=1)
     lines(x_seq,y_seq,lty=2, col="red",lwd=1)
@@ -819,15 +818,24 @@ ajuste_RPM_Resistencia_so<- function(df,tabla_sinout){
     
     
     
-    
-    
+    subtitle_nom<- paste0("Experimento = ",titulos_grafico[pruebas])
+    maintitle<- paste0("Gráfica Velocidad Angular-Resistencia \n",subtitle_nom)
     par(new=T)
-    text(max(x)/2,max(y)/2,labels=paste("Correlación = ",as.character(round(cor(y,predict(m)),3))),col = "red")
-    text(max(x)/2,max(y)/3,labels=paste("Correlación = ",as.character(round(cor(y_so,predict(m_so)),3))),col = "blue")
     axis(2, at=seq(0,(max(y_so_seq)+(max(y_so_seq))/5), by=round((max(y_so_seq)+(max(y_so_seq))/5)/10,-1)),las=2)
-    title(main = "Gráfica RPM-Resistencia", sub = paste0("Experimento = ",titulos_grafico[pruebas]))
-    dev.off()
+    title(main = maintitle)
     
+    R_sinVA<- paste0("Regresión sin VA"," (Correlación= ",as.character(round(cor(y_so,predict(m_so)),3)),")")
+    R_conVA<- paste0("Regresión sin VA"," (Correlación= ",as.character(round(cor(y,predict(m)),3)),")")
+    
+
+    legend("right", inset=c(0,0),
+           legend = c(R_sinVA,R_conVA,"Valores comunes", "Valores atípicos "),
+           pch = c(NA,NA, 4,20),
+           lty = c(2,2,NA,NA), 
+           col = c("blue","red","black","red"),ncol = 1,cex = 1)
+    
+        dev.off()
+
   }
 
 }
