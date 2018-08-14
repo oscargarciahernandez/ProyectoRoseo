@@ -1404,9 +1404,6 @@ ploteo_experimento_estandar_RPM_regresion_CPmax<- function(datos,grados){
     pch_dif<-c(0:5)
     lista_Cpmax<-list()
     for(i in 1:length(lambda_Cp)){
-      #en caso de que sea mejor añadir el origen
-      #x<- c(0,lambda_Cp[[i]][,2])
-      #y<- c(0,lambda_Cp[[i]][,1])
       x<- lambda_Cp[[i]][,2]
       y<- lambda_Cp[[i]][,1]
       fit5<-lm(y~poly(x,grados,raw=TRUE))
@@ -1417,7 +1414,6 @@ ploteo_experimento_estandar_RPM_regresion_CPmax<- function(datos,grados){
            xlab = "TSR", ylab = "Cp", bty='L')
       par(new=T)
       lines(xx, predict(fit5, data.frame(x=xx)), col=colores[i],lwd=2)
-      
       tabla_maxcp<-cbind(xx,predict(fit5, data.frame(x=xx)))
       Cp_max_point<-tabla_maxcp[which.max(tabla_maxcp[,2]),]
       lista_Cpmax[[i]]<- Cp_max_point
@@ -1437,15 +1433,33 @@ ploteo_experimento_estandar_RPM_regresion_CPmax<- function(datos,grados){
     tabla_CPmax<-data.frame(matrix(unlist(lista_Cpmax), 
                       nrow=length(lista_Cpmax), 
                       byrow=T),stringsAsFactors=FALSE)
-    tabla_CPmax<-rbind(c(0,0),tabla_CPmax)
+    tabla_CPmax<-rbind(tabla_CPmax)
     names(tabla_CPmax)<- c("TSR","Cp")
     tabla_CPmax<- tabla_CPmax[order(tabla_CPmax[,1]),]
     
     points(tabla_CPmax$TSR,tabla_CPmax$Cp, pch= 20,cex=2)
     y<- tabla_CPmax$Cp
     x<- tabla_CPmax$TSR
+    
     fit_cp<-lm(y~poly(x,grados,raw=TRUE))
+    
+    
+    
+    m_so_1<-function(y_so,x_so){
+      return(nls(y_so~a*x_so/(b+x_so), start = list(a=-100, b=-100)))
+    }
+    m_so_2<-function(y_so,x_so){
+      return(nlsLM(y_so~a*x_so/(b+x_so), start = list(a=-100, b=-100)))
+    }
+    m_so<-tryCatch(m_so_1(y,x), error=function(e) m_so_2(y,x))
+    a_m<- as.numeric(as.character(coef(m_so)[1]))
+    b_m<-as.numeric(as.character(coef(m_so)[2]))
+    y_m_so<- (a_m*xx)/(b_m+xx)
+    
+    
     lines(xx, predict(fit_cp, data.frame(x=xx)), col="black",lwd=1,lty=2)
+    lines(xx,y_m_so, col="grey",lwd=1, lty=2)
+    
     dev.off()
     
   }

@@ -63,6 +63,7 @@ ploteo_experimento_individual(df,3,1)
 ### para generar ploteos de rpm y omhnios. a ka vez que obtengo un data.frame cob los coeficientes de ajuste a y b
 ## los coeficientes se consiguen para la correlacion más alta, dado que estoy probando con dos regresiones
 ## siempre hay una más acertada que otra.
+source(here('tratamiento_outliers.R'))
 
 
 coeficientes_RPM<-ajuste_RPM_Resistencia_so(df,tablas_sin_outliers_ni_decreasing)
@@ -71,7 +72,7 @@ names(coeficientes_RPM)<- c("Experimento","Angulo","Porcentaje","a","b")
 
 ### añado coeficientes a y b a la tabla df y calcular RPM segun regresion y TSR_vientoestandar y TSR_lectura
 
-add_coef(df,coeficientes_RPM)
+df<-add_coef(df,coeficientes_RPM)
 
 
 
