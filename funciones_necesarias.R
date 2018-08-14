@@ -885,8 +885,6 @@ add_coef<-function(df,coeficientes_RPM){
   }
 
 
-    ##lambda_cp es una tabla de dos columnas (cp,lambda) 
-   
     
 
 ##### ploteos de TSR_CP empleando los valores de TSR de la regresion   
@@ -1467,7 +1465,8 @@ ploteo_experimento_estandar_RPM_regresion_CPmax<- function(datos,grados){
 }
 
 
-## Elaboracion Grafica Potencia_m/s
+## Elaboracion Grafica Potencia_m/s y devuelve los coeficientes
+##de la regresion. 
 grafica_Potencia_V<-function(df,xlimite,ylimite){
 select_groups <- function(data, groups) {
   data[sort(unlist(attr(data, "indices")[ groups ])) + 1, ]
@@ -1516,6 +1515,7 @@ jpeg(paste0("C:/TFG/pruebaslaboratorio/graficos_Potencia_V/grafica_Potencia_V.jp
 colores<- c("orange","red","blue","dodgerblue4","purple","black")
 pch_dif<-c(0:5)
 correlacion<- vector()
+lista_coef<-list()
 for(i in 1:length(lista_watts_Vviento_max)){
   #en caso de que sea mejor añadir el origen
   #x<- c(0,lambda_Cp[[i]][,2])
@@ -1533,6 +1533,7 @@ for(i in 1:length(lista_watts_Vviento_max)){
   points(x,y, pch= pch_dif[i])
   par(new=T)
   correlacion[i]<- cor(y,predict(fit_curva))
+  lista_coef[[i]]<- coef(fit_curva)
 }
 
 axis(2, at=seq(0,ylimite[2], by=round(ylimite[2]/7,0)),las=2)
@@ -1567,12 +1568,34 @@ titulos_graficos<-function(df){
   
 }
 nombres_df<- titulos_graficos(df)
+
+
 leyenda<- paste0(nombres_df," (Cor= ",round(correlacion,4),")")
 
 legend("topleft",y.intersp = 0.75,seg.len = 0.9,
        bty="n", bg="transparent",inset=c(0,0),
        legend = leyenda,lty = c(2,2,2,2,2),lwd = c(2,2,2,2,2),col = colores[1:5],ncol = 1,cex = 1)
 dev.off()
+
+tabladenombress<-function(df){
+  group_number<-length(attr(group_by(df,experimento,angulo), "group"))
+  tabladenombres<- matrix(-31,ncol = 2, nrow = group_number)
+  for (grupos in 1:group_number) {
+    grupos_rpm_resistencia<- df %>% group_by(.,experimento,angulo) %>% select_groups(grupos)
+    tabladenombres[grupos,1]<-as.character(grupos_rpm_resistencia$experimento[1])
+    tabladenombres[grupos,2]<- as.character(grupos_rpm_resistencia$angulo[1])
+  }
+  return(as.data.frame(tabladenombres))
+}
+
+tablanombres<-tabladenombress(df)
+
+coeficientes_P_V<-data.frame(matrix(unlist(lista_coef),nrow=5, byrow=T))
+
+coef_tabla<- cbind(tablanombres,coeficientes_P_V) 
+names(coef_tabla)<-c("Experimento","Angulo","a","b")
+
+return(coef_tabla)
 
 }
 

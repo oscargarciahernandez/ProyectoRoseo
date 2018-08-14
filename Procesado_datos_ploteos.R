@@ -89,3 +89,13 @@ ploteo_experimento_media_RPM_regresion(df,3)
 ploteo_experimento_estandar_RPM_regresion_CPmax(df,2)
 
 
+
+
+###ploteo de la curva Potencia, Vviento. Teniendo en cuenta que hay que 
+##añadir los limites de x e y para la grafica y que además
+##devuelve un data.frame con los coeficientes. Para posteriormente
+## hacer lo que queramos con ellos. 
+## la formula de ajuste es y ~ b + a*x^3 
+limitex<- c(0,20)
+limitey<- c(0,50)
+coeficientes_Curva_P_V<- grafica_Potencia_V(df,limitex,limitey)
