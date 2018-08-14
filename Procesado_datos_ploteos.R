@@ -41,9 +41,9 @@ df<- df_mutate(df)
 ## velocidad de la lectura del anemometro (lectura)
 ## velocidad del viento media, una media entre lectura y estandar... SOCORRO¡ 
 
-ploteo_experimento_estandar(df,3)
-ploteo_experimento_lectura(df,3)
-ploteo_experimento_media(df,3)
+#ploteo_experimento_estandar(df,3)
+#ploteo_experimento_lectura(df,3)
+#ploteo_experimento_media(df,3)
 
 
 ### COSITAS PARA SOLUCIONAR,  TENGO UN DATO PARA CONCENTRADOR 30 GRADOS Y PARA LA VELOCIDAD MAXIMA
@@ -57,7 +57,7 @@ ploteo_experimento_media(df,3)
 ## 5--> piloto
 
 
-ploteo_experimento_individual(df,3,1)
+#ploteo_experimento_individual(df,3,1)
 
 
 ### para generar ploteos de rpm y omhnios. a ka vez que obtengo un data.frame cob los coeficientes de ajuste a y b
@@ -87,3 +87,5 @@ ploteo_experimento_media_RPM_regresion(df,3)
 
 
 ploteo_experimento_estandar_RPM_regresion_CPmax(df,2)
+
+

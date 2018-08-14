@@ -889,7 +889,7 @@ add_coef<-function(df,coeficientes_RPM){
    
     
 
-    
+##### ploteos de TSR_CP empleando los valores de TSR de la regresion   
     
 ploteo_experimento_estandar_RPM_regresion<- function(datos,grados){
   df<-datos
@@ -1300,7 +1300,7 @@ ploteo_experimento_media_RPM_regresion<- function(datos,grados){
 }
 
     
-
+## Ploteos CP_TSR uniendo los puntos de CP_max
 
 ploteo_experimento_estandar_RPM_regresion_CPmax<- function(datos,grados){
   df<-datos
@@ -1466,7 +1466,120 @@ ploteo_experimento_estandar_RPM_regresion_CPmax<- function(datos,grados){
   
 }
 
+
+## Elaboracion Grafica Potencia_m/s
+grafica_Potencia_V<-function(df,xlimite,ylimite){
+select_groups <- function(data, groups) {
+  data[sort(unlist(attr(data, "indices")[ groups ])) + 1, ]
+}
+
+group_number<-length(attr(group_by(df,experimento,angulo), "group"))
+lista_watts_Vviento<- list()
+nombres_expr<-vector()
+for (groups_ind in 1:group_number) {
+  
+  xx<- df %>% group_by(.,experimento,angulo) %>% select_groups(groups_ind)
+  nombre_1<-as.character(xx$experimento[1])
+  nombre_2<-as.character(xx$angulo[1])
+  nombre<-paste(nombre_1,nombre_2,sep = "_")
+
+  
+  percentaje_number<-length(attr(group_by(xx,porcentaje), "group") )
+  xx_percentaje<-list()
+  for (per in 1:percentaje_number) {
+    xx_perc<- xx %>% group_by(.,porcentaje) %>% select_groups(per)
+    xx_perc<-cbind(xx_perc$cp_est,xx_perc$watts,xx_perc$Vviento_estandar)
+    colnames(xx_perc)<- c("cp","watts", "Vviento")
+    xx_percentaje[[per]]<- xx_perc
     
+  }
+  lista_watts_Vviento[[groups_ind]]<- xx_percentaje
+  nombres_expr[groups_ind]<- nombre
+}
+
+names(lista_watts_Vviento)<- nombres_expr
+
+lista_watts_Vviento_max<-list()
+for (i in 1:length(lista_watts_Vviento)) {
   
+  df_watts_Vviento<- data.frame(matrix(unlist(lapply(lista_watts_Vviento[[i]],
+                                                     function(x) x[which.max(x[,1]),2:3])),
+                                       nrow=6, byrow=T))
+  names(df_watts_Vviento)<- c("Watss","Vviento")
+  lista_watts_Vviento_max[[i]]<- df_watts_Vviento
+}
+names(lista_watts_Vviento_max)<- nombres_expr
+
+dir.create(paste0("C:/TFG/pruebaslaboratorio/graficos_Potencia_V/"))
+
+jpeg(paste0("C:/TFG/pruebaslaboratorio/graficos_Potencia_V/grafica_Potencia_V.jpeg"))
+colores<- c("orange","red","blue","dodgerblue4","purple","black")
+pch_dif<-c(0:5)
+correlacion<- vector()
+for(i in 1:length(lista_watts_Vviento_max)){
+  #en caso de que sea mejor añadir el origen
+  #x<- c(0,lambda_Cp[[i]][,2])
+  #y<- c(0,lambda_Cp[[i]][,1])
+  x<- lista_watts_Vviento_max[[i]][,2]
+  y<- lista_watts_Vviento_max[[i]][,1]
+  fit_curva<-nls(y~b+a*x^3,start = list(a=0, b=0))
+  xx <- seq(min(x),xlimite[2], by=0.1)
   
+  plot(NULL,xlim=xlimite,
+       ylim = ylimite,cex=0.005, yaxt ="n",
+       xlab = "Velocidad del viento (m/s)", ylab = "Potencia (W)", bty='L')
+  par(new=T)
+  lines(xx, predict(fit_curva, data.frame(x=xx)), col=colores[i],lwd=2,lty=2)
+  points(x,y, pch= pch_dif[i])
+  par(new=T)
+  correlacion[i]<- cor(y,predict(fit_curva))
+}
+
+axis(2, at=seq(0,ylimite[2], by=round(ylimite[2]/7,0)),las=2)
+
+titulos_graficos<-function(df){
+  group_number<-length(attr(group_by(df,experimento,angulo,porcentaje), "group"))
+  lista_rpm_resistencia<- list()
+  nombres_lista<- vector()
+  titulos_grafico<- vector()
+  tabladenombres<- matrix(-31,ncol = 3, nrow = group_number)
+  for (grupos in 1:group_number) {
+    grupos_rpm_resistencia<- df %>% group_by(.,experimento,angulo,porcentaje) %>% select_groups(grupos)
+    
+    tabla_resistencia_rpm<- as.data.frame(cbind(as.numeric(grupos_rpm_resistencia$RPM),as.data.frame(grupos_rpm_resistencia$resistencia)))
+    colnames(tabla_resistencia_rpm)<- c("RPM", "Omhnios")
+    
+    nombre_tabla<- unique(paste(grupos_rpm_resistencia$experimento,grupos_rpm_resistencia$angulo,grupos_rpm_resistencia$porcentaje,sep = "_"))
+    
+    if(is.na(grupos_rpm_resistencia$angulo)){
+      titulo_graph<- unique(paste0(grupos_rpm_resistencia$experimento))
+    }else{
+      titulo_graph<- unique(paste0(grupos_rpm_resistencia$experimento,"-",grupos_rpm_resistencia$angulo,"º"))
+    }
+    titulos_grafico[grupos]<- titulo_graph
+    lista_rpm_resistencia[[grupos]]<- tabla_resistencia_rpm
+    nombres_lista[grupos]<- nombre_tabla
+    tabladenombres[grupos,1]<-as.character(grupos_rpm_resistencia$experimento[1])
+    tabladenombres[grupos,2]<- as.character(grupos_rpm_resistencia$angulo[1])
+    tabladenombres[grupos,3]<- as.character(grupos_rpm_resistencia$porcentaje[1])
+  }
+  return(unique(titulos_grafico))
+  
+}
+nombres_df<- titulos_graficos(df)
+leyenda<- paste0(nombres_df," (Cor= ",round(correlacion,4),")")
+
+legend("topleft",y.intersp = 0.75,seg.len = 0.9,
+       bty="n", bg="transparent",inset=c(0,0),
+       legend = leyenda,lty = c(2,2,2,2,2),lwd = c(2,2,2,2,2),col = colores[1:5],ncol = 1,cex = 1)
+dev.off()
+
+}
+
+
+
+
+
+
+
 
