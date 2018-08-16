@@ -1,5 +1,5 @@
 library(here)
-source(here('funciones_necesarias.R'))
+source(here('funciones_necesarias.R'),encoding = "UTF-8")
 
 data_path<- here('data/')
 archivos <- list.files(data_path, pattern = 'csv',
@@ -104,7 +104,7 @@ df<-add_coef_P_V(df,coeficientes_Curva_P_V)
 
 
 
-#### calculo de la energia anual producida
+#### calculo de la energia anual producida,  CATÁSTROFE¡¡ 
 source(here("vuelta.R"))
 
 V_viento<- seq(0.5,16.5, by= 0.5)

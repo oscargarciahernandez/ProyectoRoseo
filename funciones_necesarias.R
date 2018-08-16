@@ -5,6 +5,7 @@ library(dplyr)
 library(ggplot2)
 library(minpack.lm)
 
+
 df_mutate<-function(tabla_cruda){
   df<- tabla_cruda
   df %<>% mutate(experimento= factor( 
