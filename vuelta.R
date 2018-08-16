@@ -97,60 +97,64 @@ barplot(dist_vel_NO_anual$`horas anuales`)
 
 ##Barplot con concentrador
 
-tabla_NO_x4<- tabla_NO$wind_abs*4
+#tabla_NO_x4<- tabla_NO$wind_abs*4
 
-grup_vel_NO_x4<-cut(tabla_NO_x4,seq(0,max(tabla_NO_x4),by=0.5),
-                 labels = seq(0.5,max(tabla_NO_x4),by=0.5), 
-                 include.lowest = T,right = T)
-tabla_NO_x4<- as.data.frame(cbind(tabla_NO_x4,grup_vel_NO_x4))
+#grup_vel_NO_x4<-cut(tabla_NO_x4,seq(0,max(tabla_NO_x4),by=0.5),
+#                    labels = seq(0.5,max(tabla_NO_x4),by=0.5), 
+#                    include.lowest = T,right = T)
+#tabla_NO_x4<- as.data.frame(cbind(tabla_NO_x4,grup_vel_NO_x4))
 
-dist_vel_NO_x4<-as.data.frame(table(tabla_NO_x4$grup_vel))
+#dist_vel_NO_x4<-as.data.frame(table(tabla_NO_x4$grup_vel))
 
-dist_vel_NO_x4_per<- as.data.frame(dist_vel_NO_x4$Freq/dist_total)
-dist_vel_NO_x4_anual<-as.data.frame(dist_vel_NO_x4_per*8600)
-names(dist_vel_NO_x4_anual)<-"horas anuales"
-barplot(dist_vel_NO_x4_anual$`horas anuales`)
+#dist_vel_NO_x4_per<- as.data.frame(dist_vel_NO_x4$Freq/dist_total)
+#dist_vel_NO_x4_anual<-as.data.frame(dist_vel_NO_x4_per*8600)
+#names(dist_vel_NO_x4_anual)<-"horas anuales"
+#barplot(dist_vel_NO_x4_anual$`horas anuales`)
 
 
 
 
 
 ### representar la curva de potencia del aerogeneraodor
-Vviento<-c(3.13,10,17.88)
-Pot<- c(1,200,1100)  
-Data_curve<-data.frame(Pot,Vviento)
-Vviento_serie<-seq(3.13,17.88,by=0.02)
+#Vviento<-c(3.13,10,17.88)
+#Pot<- c(1,200,1100)  
+#Data_curve<-data.frame(Pot,Vviento)
+#Vviento_serie<-seq(3.13,17.88,by=0.02)
 
 #Fit the linear model
-pot_fit<- nls(Pot ~ exp(a+b*Vviento),data =Data_curve,start=c(a=0,b=0))
+#pot_fit<- nls(Pot ~ exp(a+b*Vviento),data =Data_curve,start=c(a=0,b=0))
 
 #lm(Pot~exp(a+b*Vviento), data = Data_curve, duis
 ###ejecutas pot_fit y te dice que a=2.9527 y b=0.2266
-a=2.9527
-b=0.2266
+#a=2.9527
+#b=0.2266
 
 # Check that the estimated coefficient is 25, just as we expected!
 
 #Plot the fitted line
-plot(Vviento, Pot)
-lines(Vviento_serie, exp(a+b*Vviento_serie), col = "red")
+#plot(Vviento, Pot)
+#lines(Vviento_serie, exp(a+b*Vviento_serie), col = "red")
 
 ##la curvva será potencia 
 ##0 de 0 a 3.13 m/s
 ## exp(2.9527+0.2266*Vviento ) de 3.13 a 17.88
-tramo_pot<-seq(3,18,by=1)
-Pot_tramo<- exp(2.9527+0.2266*tramo_pot )/1000
+#tramo_pot<-seq(3,18,by=1)
+#Pot_tramo<- exp(2.9527+0.2266*tramo_pot )/1000
 ## 1100 de 17.88 hasta infinito
 
-E_kwh_1_sin <- dist_vel_NO_anual[3:18,]*Pot_tramo
-E_kwh_2_sin <- dist_vel_NO_anual[18:length(dist_vel_NO_anual),]*1.1
+#E_kwh_1_sin <- dist_vel_NO_anual[3:18,]*Pot_tramo
+#E_kwh_2_sin <- dist_vel_NO_anual[18:length(dist_vel_NO_anual),]*1.1
 
-E_kwh_1_con <- dist_vel_NO_x4_anual[3:18,]*Pot_tramo
-E_kwh_2_con <- dist_vel_NO_x4_anual[18:length(dist_vel_NO_x4_anual),]*1.1
+#E_kwh_1_con <- dist_vel_NO_x4_anual[3:18,]*Pot_tramo
+#E_kwh_2_con <- dist_vel_NO_x4_anual[18:length(dist_vel_NO_x4_anual),]*1.1
+
+
+
+
 
 # try the default settings
-p0 <- plot.windrose(spd = tabla_loc$wind_abs80,
-                    dir = tabla_loc$ind_di44r_trig_from_degrees)
+#p0 <- plot.windrose(spd = tabla_loc$wind_abs80,
+                    #dir = tabla_loc$ind_di44r_trig_from_degrees)
 
-p0 <- plot.windrose(spd = tabla_loc8$wind_abs,
-                    dir = tabla_loc8$ind_dir_trig_from_degrees)
+#p0 <- plot.windrose(spd = tabla_loc8$wind_abs,
+                    #dir = tabla_loc8$ind_dir_trig_from_degrees)

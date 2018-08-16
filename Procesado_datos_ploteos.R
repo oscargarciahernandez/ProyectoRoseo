@@ -101,3 +101,21 @@ limitey<- c(0,50)
 coeficientes_Curva_P_V<- grafica_Potencia_V(df,limitex,limitey)
 
 df<-add_coef_P_V(df,coeficientes_Curva_P_V)
+
+
+
+#### calculo de la energia anual producida
+source(here("vuelta.R"))
+
+V_viento<- seq(0.5,16.5, by= 0.5)
+energia_anual<- vector()
+for (i in 1:length(coeficientes_Curva_P_V[,1])) {
+  Potencia<-coeficientes_Curva_P_V$b[i]+ coeficientes_Curva_P_V$a[i]*V_viento^3
+  Energia<- (dist_vel_NO_anual*Potencia)/1000
+  Energia<- replace(Energia, Energia<0, 0)
+  energia_anual[i]<- sum(Energia)
+}
+tabla_energia_anual<-cbind(coeficientes_Curva_P_V[,1:2],energia_anual)
+
+
+
