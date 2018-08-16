@@ -99,3 +99,5 @@ ploteo_experimento_estandar_RPM_regresion_CPmax(df,2)
 limitex<- c(0,20)
 limitey<- c(0,50)
 coeficientes_Curva_P_V<- grafica_Potencia_V(df,limitex,limitey)
+
+df<-add_coef_P_V(df,coeficientes_Curva_P_V)

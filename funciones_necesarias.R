@@ -1601,6 +1601,27 @@ return(coef_tabla)
 
 
 
+add_coef_P_V<-function(df,coeficientes_Curva_P_V){
+  df %<>% mutate(coef_a_PV= -31,coef_b_PV=-31)
+  vector_logico<- list()
+  for (i in 1:length(coeficientes_Curva_P_V[,1])) {
+    if(coeficientes_Curva_P_V[i,1]=="concentrador"){
+      vector_logico[[i]]<- c(coeficientes_Curva_P_V[i,1]==df$experimento & coeficientes_Curva_P_V[i,2]==df$angulo)
+      
+    }else{
+      vector_logico[[i]]<- c(coeficientes_Curva_P_V[i,1]==df$experimento)
+      
+    }
+  }
+  for (j in 1:length(vector_logico)) {
+    df %<>% mutate(coef_a_PV=replace(coef_a_PV, vector_logico[[j]],as.numeric(as.character( coeficientes_Curva_P_V[j,3]))),
+                   coef_b_PV=replace(coef_b_PV, vector_logico[[j]],as.numeric(as.character( coeficientes_Curva_P_V[j,4]))))
+  }
+  
+  df %<>% mutate(watts_regresion= (as.numeric(as.character(coef_a_PV)) *as.numeric(as.character(Vviento_estandar)))+(as.numeric(as.character(coef_b))))
+  
+}
+
 
 
 
