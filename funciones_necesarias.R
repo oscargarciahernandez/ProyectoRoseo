@@ -903,7 +903,11 @@ ploteo_experimento_estandar_RPM_regresion<- function(datos,grados){
     nombre_1<-as.character(xx$experimento[1])
     nombre_2<-as.character(xx$angulo[1])
     nombre<-paste(nombre_1,nombre_2,sep = "_")
-    
+    if(is.na(nombre_2)){
+      nombre_grafica<- nombre_1
+    }else{
+      nombre_grafica<-paste(nombre_1," ",nombre_2,"º",sep = "")
+    }
     
     percentaje_number<-length(attr(group_by(xx,porcentaje), "group") )
     xx_percentaje<-list()
@@ -1019,6 +1023,10 @@ ploteo_experimento_estandar_RPM_regresion<- function(datos,grados){
     
     legend("topright", inset=c(0,0),orden_leyenda[,2],pch = as.numeric(orden_leyenda[,3]),
            text.col = orden_leyenda[,4],ncol = 1,cex = 1)
+    
+    subtitle_nom<- paste0("Experimento = ",nombre_grafica)
+    maintitle<- paste0("Gráfica CP-TSR \n",subtitle_nom)
+    title(main = maintitle)
     
     dev.off()
     
@@ -1307,6 +1315,7 @@ ploteo_experimento_estandar_RPM_regresion_CPmax<- function(datos,grados){
     data[sort(unlist(attr(data, "indices")[ groups ])) + 1, ]
   }
   
+  lista_Cpmax_total<-list()
   group_number<-length(attr(group_by(df,experimento,angulo), "group"))
   for (groups_ind in 1:group_number) {
     
@@ -1314,6 +1323,11 @@ ploteo_experimento_estandar_RPM_regresion_CPmax<- function(datos,grados){
     nombre_1<-as.character(xx$experimento[1])
     nombre_2<-as.character(xx$angulo[1])
     nombre<-paste(nombre_1,nombre_2,sep = "_")
+    if(is.na(nombre_2)){
+      nombre_grafica<- nombre_1
+    }else{
+      nombre_grafica<-paste(nombre_1," ",nombre_2,"º",sep = "")
+    }
     
     
     percentaje_number<-length(attr(group_by(xx,porcentaje), "group") )
@@ -1456,13 +1470,21 @@ ploteo_experimento_estandar_RPM_regresion_CPmax<- function(datos,grados){
     y_m_so<- (a_m*xx)/(b_m+xx)
     
     
-    lines(xx, predict(fit_cp, data.frame(x=xx)), col="black",lwd=1,lty=2)
-    lines(xx,y_m_so, col="grey",lwd=1, lty=2)
+    #lines(xx, predict(fit_cp, data.frame(x=xx)), col="black",lwd=1,lty=2)
+    #lines(xx,y_m_so, col="grey",lwd=1, lty=2)
+    
+    
+    subtitle_nom<- paste0("Experimento = ",nombre_grafica)
+    maintitle<- paste0("Gráfica CP-TSR \n",subtitle_nom)
+    title(main = maintitle)
     
     dev.off()
     
+    lista_Cpmax_total[[groups_ind]]<- tabla_CPmax
+    
   }
   
+  return(lista_Cpmax_total)
 }
 
 
@@ -1623,6 +1645,148 @@ add_coef_P_V<-function(df,coeficientes_Curva_P_V){
   
 }
 
+
+ploteo_CPmax10<- function(datos,grados){
+  df<-datos
+  select_groups <- function(data, groups) {
+    data[sort(unlist(attr(data, "indices")[ groups ])) + 1, ]
+  }
+  
+  lista_Cpmax_total<-list()
+  lista_Cps_nueva<-list()
+  nombres_gra<- vector()
+  group_number<-length(attr(group_by(df,experimento,angulo), "group"))
+  for (groups_ind in 1:group_number) {
+
+    xx<- df %>% group_by(.,experimento,angulo) %>% select_groups(groups_ind)
+    percentaje_number<-length(attr(group_by(xx,porcentaje), "group") )
+    
+    nombre_1<-as.character(xx$experimento[1])
+    nombre_2<-as.character(xx$angulo[1])
+    nombre<-paste(nombre_1,nombre_2,sep = "_")
+    if(is.na(nombre_2)){
+      nombre_grafica<- nombre_1
+    }else{
+      nombre_grafica<-paste(nombre_1," ",nombre_2,"º",sep = "")
+    }
+    
+    xx_percentaje<-list()
+    for (per in 1:percentaje_number) {
+      xx_perc<- xx %>% group_by(.,porcentaje) %>% select_groups(per)
+      xx_perc<-cbind(xx_perc$cp_est,xx_perc$TSR_regresion_est,xx_perc$Vviento_estandar)
+      colnames(xx_perc)<- c("cp","TSR", "Vviento")
+      xx_percentaje[[per]]<- xx_perc
+      
+    }
+    
+    
+    
+    
+    ##lambda_cp es una tabla de dos columnas (cp,lambda) 
+    lambda_Cp<- xx_percentaje
+    lambda_Cp_clean<-list()
+    for(j in 1:length(lambda_Cp)){
+      cp_lmb<- lambda_Cp[[j]]
+      cp_lmb<-cp_lmb[order(cp_lmb[,2]),]
+      
+      
+      TSR_1<-cp_lmb[,2]
+      Cp_1<-cp_lmb[,1]
+      
+      V_tsr<- seq(0.05,max(TSR_1),by=max(TSR_1)/8)
+      TSR_2<- vector()
+      Cp_2<- vector()
+      
+      for(i in 1:length(V_tsr)){
+        
+        Cp_2[i]<- Cp_1[which.min(abs(TSR_1-V_tsr[i]))]
+        TSR_2[i]<-TSR_1[which.min(abs(TSR_1-V_tsr[i]))]
+        
+      }
+      validacion<-cbind(unique(Cp_2),unique(TSR_2))
+      validacion_1<- validacion[1:which.max(validacion[,1]),]
+      validacion_2<- validacion[(which.max(validacion[,1])+1):length(validacion[,1]),]
+      indeeex<- vector()
+      rr<- 1 
+      
+      if(length(validacion_2)==2){
+        validacion_2<- validacion_2
+      }else{
+        for (i in 1:length(validacion_2[,1])) {
+          
+          
+          if(i==length(validacion_2[,1])){break}else{
+            
+            if(validacion_2[i,1] < validacion_2[(i+1),1]){
+              indeeex[rr]<- as.numeric(i) 
+              rr<-rr+1
+              
+              
+            }
+            
+          }
+        }
+        
+      }
+      
+      
+      if(length(indeeex)==0){
+        validacion_2<- validacion_2
+      }else{
+        validacion_2<-validacion_2[-indeeex,]
+      }
+      
+      clean_table<-rbind(validacion_1,validacion_2)
+      
+      
+      lambda_Cp_clean[[j]]<- clean_table
+      
+    }
+    
+    lista_Cps_nueva[[groups_ind]]<- lambda_Cp_clean
+    nombres_gra[groups_ind]<- nombre_grafica
+    
+  } 
+ 
+  lista_cpmsVmax<- lapply(lista_Cps_nueva,"[[",1)
+    
+    
+    dir.create(paste0("C:/TFG/pruebaslaboratorio/graficos_Cp_10_juntos/"))
+    
+    jpeg(paste0("C:/TFG/pruebaslaboratorio/graficos_Cp_10_juntos/",nombre,".jpeg"))
+    colores<- c("orange","red","blue","dodgerblue4","purple")
+    pch_dif<-c(0:5)
+    for(i in 1:(length(lista_cpmsVmax))){
+      x<- lista_cpmsVmax[[i]][,2]
+      y<- lista_cpmsVmax[[i]][,1]
+      fit5<-lm(y~poly(x,grados,raw=TRUE))
+      xx <- seq(min(x),max(x), by=0.01)
+      
+      plot(NULL,xlim=c(0,2),
+           ylim = c(0,0.10),cex=0.005, yaxt ="n",
+           xlab = "TSR", ylab = "Cp", bty='L')
+      par(new=T)
+      lines(xx, predict(fit5, data.frame(x=xx)), col=colores[i],lwd=2)
+      tabla_maxcp<-cbind(xx,predict(fit5, data.frame(x=xx)))
+      par(new=T)
+    }
+    
+    axis(2, at=seq(0,0.1, by=0.02),las=2)
+
+    leyenda<-paste0(nombres_gra)
+    
+    
+    legend("topright", inset=c(0,0),leyenda,
+           text.col = colores,ncol = 1,cex = 1)
+    
+
+    title(main = "Comparación de gráficas Cp-TSR a 10 m/s")
+    
+    dev.off()
+    
+
+  }
+  
 
 
 

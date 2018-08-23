@@ -78,17 +78,17 @@ df<-add_coef(df,coeficientes_RPM)
 
 ###obtencion de las graficas empleando la velocidad de giro aplicando la regresion para estandar,lectura y media
 ploteo_experimento_estandar_RPM_regresion(df,3)
-ploteo_experimento_lectura_RPM_regresion(df,3)
-ploteo_experimento_media_RPM_regresion(df,3)
+#ploteo_experimento_lectura_RPM_regresion(df,3)
+#ploteo_experimento_media_RPM_regresion(df,3)
 
 
 
 
 
 
-ploteo_experimento_estandar_RPM_regresion_CPmax(df,2)
+tabla_cpmax_tsr<-ploteo_experimento_estandar_RPM_regresion_CPmax(df,2)
 
-
+Vmax_cpmax<- sapply(tabla_cpmax_tsr, "[", 6, )
 
 
 ###ploteo de la curva Potencia, Vviento. Teniendo en cuenta que hay que 
