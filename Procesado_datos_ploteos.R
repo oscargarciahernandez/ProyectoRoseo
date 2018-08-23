@@ -88,7 +88,9 @@ ploteo_experimento_estandar_RPM_regresion(df,3)
 
 tabla_cpmax_tsr<-ploteo_experimento_estandar_RPM_regresion_CPmax(df,2)
 
-Vmax_cpmax<- sapply(tabla_cpmax_tsr, "[", 6, )
+
+#esto para crear la tabla de cpmax y TSR en el documento. 
+#Vmax_cpmax<- sapply(tabla_cpmax_tsr, "[", 6, )
 
 
 ###ploteo de la curva Potencia, Vviento. Teniendo en cuenta que hay que 
