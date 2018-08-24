@@ -120,4 +120,8 @@ for (i in 1:length(coeficientes_Curva_P_V[,1])) {
 tabla_energia_anual<-cbind(coeficientes_Curva_P_V[,1:2],energia_anual)
 
 
+##Representar las rpms en funcion de las resistencias de manera comparativa
+## Para cada porcentaje
+RPM_por_porcentaje(df)
+
 

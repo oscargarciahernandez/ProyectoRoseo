@@ -1798,3 +1798,87 @@ ploteo_CPmax10<- function(datos,grados){
   }
   
 } 
+
+
+
+
+
+## funcion para plotear las velocidades en funcion de la resistencia en cada 
+##experimento
+
+RPM_por_porcentaje<-function(df){
+  porcentaje_num<-c(50,60,70,80,90,100)
+  for (j in 1:length(porcentaje_num)) {
+    p<-filter(df,porcentaje==porcentaje_num[j])  
+    
+    
+    select_groups <- function(data, groups) {
+      data[sort(unlist(attr(data, "indices")[ groups ])) + 1, ]
+    }
+    
+    group_number<-length(attr(group_by(p,experimento,angulo), "group"))
+    lista_porcentaje<- list()
+    for (groups_ind in 1:group_number) {
+      xx<- p %>% group_by(.,experimento,angulo) %>% select_groups(groups_ind)
+      lista_porcentaje[[groups_ind]]<- xx
+    }
+    lista_RPM_res<-lapply(lista_porcentaje, function(x) cbind(x$RPM_regresion,as.numeric(as.character(x$resistencia))))
+    nombre_lista<-unlist(lapply(lapply(sapply(lista_porcentaje, function(x) cbind(as.character(x$experimento),as.character(x$angulo)))
+                                       , "[",1,), function(x) paste(x[1],x[2],sep = "_")))
+    names(lista_RPM_res)<- nombre_lista
+    
+    leyenda<- unlist(lapply(lapply(sapply(lista_porcentaje, function(x) cbind(as.character(x$experimento),as.character(x$angulo)))
+                                   , "[",1,), function(x) ifelse(is.na(x[2]),x[1],paste(x[1]," ",x[2],"º",sep = ""))))
+    
+    
+    
+    
+    
+    
+    y_lim<-  max(sapply(lista_RPM_res, function(x) max(x[,1])))
+    
+    
+    colores<- c("orange","red","blue","dodgerblue4","purple")
+    dir.create(paste0("C:/TFG/pruebaslaboratorio/graficos_RPM_comparativa/"))
+    
+    jpeg(paste0("C:/TFG/pruebaslaboratorio/graficos_RPM_comparativa/",porcentaje_num[j],".jpeg"))
+    plot(NULL, xlim = c(0,8000), ylim = c(0,y_lim),yaxt ="n",
+         xlab =  expression(paste("Resistencia (",Omega,")")), 
+         ylab = "Velocidad Angular (RPM)", bty='L')
+    
+    
+    for (i in 1:length(lista_RPM_res)) {
+      x<- lista_RPM_res[[i]][,2]
+      y<- lista_RPM_res[[i]][,1]
+      m_so_1<-function(y_so,x_so){
+        return(nls(y_so~a*x_so/(b+x_so),start = list(a=0,b=0)))
+      }
+      m_so_2<-function(y_so,x_so){
+        return(nlsLM(y_so~a*x_so/(b+x_so),start = list(a=0,b=0)))
+      }
+      m<-tryCatch(m_so_1(y,x), error=function(e) m_so_2(y,x))  
+      coefa <-coef(m)[1]
+      coefb <- coef(m)[2]
+      x_seq<- seq(0,8000,by=1)
+      y_seq<- coefa*x_seq/(coefb+x_seq)
+      par(new=T)
+      lines(x_seq,y_seq,lty=2, col=colores[i],lwd=2)
+      
+      
+    }
+    subtitle_nom<- paste0("Experimento = ",porcentaje_num[j],"%")
+    maintitle<- paste0("Gráfica comparativa Velocidad Angular-Resistencia \n",subtitle_nom)
+    par(new=T)
+    axis(2, at=seq(0,y_lim,by=round(y_lim/10,0)),las=2)
+    title(main = maintitle)
+    par(new=T)
+    legend("bottomright", inset=c(0,0),leyenda,
+           text.col = colores,ncol = 1,cex = 1)
+    
+    dev.off()
+    
+  }
+  
+  
+  
+}
