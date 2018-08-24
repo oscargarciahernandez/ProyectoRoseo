@@ -1552,7 +1552,7 @@ for(i in 1:length(lista_watts_Vviento_max)){
        ylim = ylimite,cex=0.005, yaxt ="n",
        xlab = "Velocidad del viento (m/s)", ylab = "Potencia (W)", bty='L')
   par(new=T)
-  lines(xx, predict(fit_curva, data.frame(x=xx)), col=colores[i],lwd=2,lty=2)
+  lines(xx, predict(fit_curva, data.frame(x=xx)), col=colores[i],lwd=1,lty=2)
   points(x,y, pch= pch_dif[i])
   par(new=T)
   correlacion[i]<- cor(y,predict(fit_curva))

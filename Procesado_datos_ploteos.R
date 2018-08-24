@@ -98,8 +98,8 @@ tabla_cpmax_tsr<-ploteo_experimento_estandar_RPM_regresion_CPmax(df,2)
 ##devuelve un data.frame con los coeficientes. Para posteriormente
 ## hacer lo que queramos con ellos. 
 ## la formula de ajuste es y ~ b + a*x^3 
-limitex<- c(0,20)
-limitey<- c(0,50)
+limitex<- c(5,10)
+limitey<- c(0,5)
 coeficientes_Curva_P_V<- grafica_Potencia_V(df,limitex,limitey)
 
 df<-add_coef_P_V(df,coeficientes_Curva_P_V)
