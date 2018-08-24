@@ -1646,7 +1646,7 @@ add_coef_P_V<-function(df,coeficientes_Curva_P_V){
 }
 
 
-##funcion para plotear todas las graficas de Cp a velocidad maxima
+##funcion para plotear todas las graficas de Cp a todas las velocidades, comparando experimentos
 ploteo_CPmax10<- function(datos,grados){
   df<-datos
   select_groups <- function(data, groups) {
@@ -1658,13 +1658,14 @@ ploteo_CPmax10<- function(datos,grados){
   nombres_gra<- vector()
   group_number<-length(attr(group_by(df,experimento,angulo), "group"))
   for (groups_ind in 1:group_number) {
-
+    
     xx<- df %>% group_by(.,experimento,angulo) %>% select_groups(groups_ind)
     percentaje_number<-length(attr(group_by(xx,porcentaje), "group") )
     
     nombre_1<-as.character(xx$experimento[1])
     nombre_2<-as.character(xx$angulo[1])
     nombre<-paste(nombre_1,nombre_2,sep = "_")
+    
     if(is.na(nombre_2)){
       nombre_grafica<- nombre_1
     }else{
@@ -1748,13 +1749,21 @@ ploteo_CPmax10<- function(datos,grados){
     nombres_gra[groups_ind]<- nombre_grafica
     
   } 
- 
-  lista_cpmsVmax<- lapply(lista_Cps_nueva,"[[",1)
+  
+  vector_nombre_vel<- c(10.34,5.47,6.04,7.29,8.33,9.36)
+  
+  
+  for (porcentaje in 1:length(lista_Cps_nueva[[1]])) {
+    
+    lista_cpmsVmax<- lapply(lista_Cps_nueva,"[[",porcentaje)
+    
+    x_max<-max(sapply(lista_cpmsVmax, function(x) max(x[,2])))
+    y_max<-max(sapply(lista_cpmsVmax, function(x) max(x[,1])))
     
     
-    dir.create(paste0("C:/TFG/pruebaslaboratorio/graficos_Cp_10_juntos/"))
+    dir.create(paste0("C:/TFG/pruebaslaboratorio/graficos_Cp_juntos/"))
     
-    jpeg(paste0("C:/TFG/pruebaslaboratorio/graficos_Cp_10_juntos/",nombre,".jpeg"))
+    jpeg(paste0("C:/TFG/pruebaslaboratorio/graficos_Cp_juntos/",porcentaje,".jpeg"))
     colores<- c("orange","red","blue","dodgerblue4","purple")
     pch_dif<-c(0:5)
     for(i in 1:(length(lista_cpmsVmax))){
@@ -1763,8 +1772,8 @@ ploteo_CPmax10<- function(datos,grados){
       fit5<-lm(y~poly(x,grados,raw=TRUE))
       xx <- seq(min(x),max(x), by=0.01)
       
-      plot(NULL,xlim=c(0,2),
-           ylim = c(0,0.10),cex=0.005, yaxt ="n",
+      plot(NULL,xlim=c(0,(x_max+0.2)),
+           ylim = c(0,(y_max+0.01)),cex=0.005, yaxt ="n",
            xlab = "TSR", ylab = "Cp", bty='L')
       par(new=T)
       lines(xx, predict(fit5, data.frame(x=xx)), col=colores[i],lwd=2)
@@ -1772,138 +1781,20 @@ ploteo_CPmax10<- function(datos,grados){
       par(new=T)
     }
     
-    axis(2, at=seq(0,0.1, by=0.02),las=2)
-
+    axis(2, at=unique(round(seq(0,(y_max+0.02), by=round((y_max/10),digits = 4)),digits = 2)),las=2)
+    
     leyenda<-paste0(nombres_gra)
     
     
     legend("topright", inset=c(0,0),leyenda,
            text.col = colores,ncol = 1,cex = 1)
     
-
-    title(main = "Comparación de gráficas Cp-TSR a 10 m/s")
+    titulo<- paste0("Comparación de gráficas Cp-TSR a ",vector_nombre_vel[porcentaje],"m/s")
+    title(main = titulo)
     
     dev.off()
     
-
+    
   }
   
-
-
-ajuste_RPM_Resistencia_so<- function(df,tabla_sinout){
-  group_number<-length(attr(group_by(df,experimento,angulo,porcentaje), "group"))
-  r<- (-2)
-  
-  
-  lista_rpm_resistencia<- list()
-  nombres_lista<- vector()
-  titulos_grafico<- vector()
-  tabladenombres<- matrix(-31,ncol = 3, nrow = group_number)
-  lista_100<-list()
-  for (grupos in 1:group_number) {
-    grupos_rpm_resistencia<- df %>% group_by(.,experimento,angulo,porcentaje) %>% select_groups(grupos)
-    
-    tabla_resistencia_rpm<- as.data.frame(cbind(as.numeric(grupos_rpm_resistencia$RPM),as.data.frame(grupos_rpm_resistencia$resistencia)))
-    colnames(tabla_resistencia_rpm)<- c("RPM", "Omhnios")
-    
-    nombre_tabla<- unique(paste(grupos_rpm_resistencia$experimento,grupos_rpm_resistencia$angulo,grupos_rpm_resistencia$porcentaje,sep = "_"))
-    
-    if(is.na(grupos_rpm_resistencia$angulo)){
-      titulo_graph<- unique(paste0(grupos_rpm_resistencia$experimento,"-",grupos_rpm_resistencia$porcentaje,"%"))
-    }else{
-      titulo_graph<- unique(paste0(grupos_rpm_resistencia$experimento,"-",grupos_rpm_resistencia$angulo,"º-",grupos_rpm_resistencia$porcentaje,"%"))
-    }
-    titulos_grafico[grupos]<- titulo_graph
-    lista_rpm_resistencia[[grupos]]<- tabla_resistencia_rpm
-    nombres_lista[grupos]<- nombre_tabla
-    tabladenombres[grupos,1]<-as.character(grupos_rpm_resistencia$experimento[1])
-    tabladenombres[grupos,2]<- as.character(grupos_rpm_resistencia$angulo[1])
-    tabladenombres[grupos,3]<- as.character(grupos_rpm_resistencia$porcentaje[1])
-  }
-  
-  ordenando<- function(ordenando){
-    return(ordenando[order(as.numeric(as.character(ordenando$Omhnios))),] ) 
-  }
-  lista_rpm_resistencia_ordenada<-lapply(lista_rpm_resistencia, ordenando)
 } 
-
-lista_rpm_resistencia[[]]
-
-tabladenombres[which(tabladenombres[,3]=="100"),]
-vector_index_100<-which(tabladenombres[,3]=="100")
-  
-  lista_coef<-list()
-  for (pruebas in vector_index_100) {
-    dir.create(paste0("C:/TFG/pruebaslaboratorio/graficos_RPM_Resistencia_sinout/"))
-    
-    jpeg(paste0("C:/TFG/pruebaslaboratorio/graficos_RPM_Resistencia/",nombres_lista[pruebas],".jpeg"))
-    x<-as.numeric(as.character(lista_rpm_resistencia_ordenada[[pruebas]][,2]))
-    x_so<-tabla_sinout[[pruebas]][,2]
-    y<- as.numeric(as.character(lista_rpm_resistencia_ordenada[[pruebas]][,1]))
-    y_so<-tabla_sinout[[pruebas]][,1]
-    
-    #dat<-as.data.frame(cbind(tabla_sinout[[pruebas]][,2],tabla_sinout[[pruebas]][,1]))
-    #names(dat)<- c("x","y")
-    #f <- function(x,a,b) {a * exp(b * x)}
-    #fm0 <- nls(log(y) ~ log(f(x, a, b)),dat, start = c(a = 1, b = 1))
-    
-    #nls(y_so ~ f(x_so, a, b), start = coef(fm0))
-    
-    
-    m<-nls(y~a*x/(b+x))
-    m_so_1<-function(y_so,x_so){
-      return(nls(y_so~a*x_so/(b+x_so)))
-    }
-    m_so_2<-function(y_so,x_so){
-      return(nlsLM(y_so~a*x_so/(b+x_so)))
-    }
-    m_so<-tryCatch(m_so_1(y_so,x_so), error=function(e) m_so_2(y_so,x_so))
-    
-    
-    
-    
-    coefa_so<-coef(m_so)[1]
-    coefb_so<- coef(m_so)[2]
-    x_so_seq<- seq(0,8000,by=1)
-    y_so_seq<- coefa_so*x_so_seq/(coefb_so+x_so_seq)
-    
-    coefa <-coef(m)[1]
-    coefb <- coef(m)[2]
-    x_seq<- seq(0,8000,by=1)
-    y_seq<- coefa*x_seq/(coefb+x_seq)
-    
-    
-    
-    
-    
-    plot(NULL,xlim=c(0,8000),
-         ylim = c(0,(max(y_so_seq)+(max(y_so_seq))/5)),cex=0.005, yaxt ="n",
-         xlab =  expression(paste("Resistencia (",Omega,")")), ylab = "Velocidad Angular (RPM)", bty='L')
-    par(new=T)
-    #lines(x,predict(m),lty=2,col="red",lwd=1)
-    #lines(x_seq,y_seq,lty=2, col="red",lwd=1)
-    #lines(x_so,predict(m_so),lty=2,col="blue",lwd=1)
-    lines(x_so_seq,y_so_seq,lty=2,col="blue",lwd=1)
-    
-    #points(x_so,y_so, pch= 4, col="blue")
-    
-    par(new=T)
-
-    #subtitle_nom<- paste0("Experimento = ",titulos_grafico[pruebas])
-    #maintitle<- paste0("Gráfica Velocidad Angular-Resistencia \n",subtitle_nom)
-    par(new=T)
-    axis(2, at=seq(0,(max(y_so_seq)+(max(y_so_seq))/5), by=round((max(y_so_seq)+(max(y_so_seq))/5)/10,-1)),las=2)
-    #title(main = maintitle)
-    
-   # R_sinVA<- paste0("Regresión sin VA"," (Correlación= ",as.character(round(cor(y_so,predict(m_so)),3)),")")
-    #R_conVA<- paste0("Regresión sin VA"," (Correlación= ",as.character(round(cor(y,predict(m)),3)),")")
-
-  }
-  
-  
-  return(lista_coef) 
-  
-}
-
-
-
