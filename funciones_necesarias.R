@@ -1534,7 +1534,10 @@ names(lista_watts_Vviento_max)<- nombres_expr
 
 dir.create(paste0("C:/TFG/pruebaslaboratorio/graficos_Potencia_V/"))
 
-jpeg(paste0("C:/TFG/pruebaslaboratorio/graficos_Potencia_V/grafica_Potencia_V.jpeg"))
+#jpeg(paste0("C:/TFG/pruebaslaboratorio/graficos_Potencia_V/grafica_Potencia_V.jpeg"))
+tiff(paste0("C:/TFG/pruebaslaboratorio/graficos_Potencia_V/grafica_Potencia_V.tiff"), width = 7, height =7, units = 'in', res = 300)
+
+
 colores<- c("orange","red","blue","dodgerblue4","purple","black")
 pch_dif<-c(0:5)
 correlacion<- vector()
@@ -1763,7 +1766,8 @@ ploteo_CPmax10<- function(datos,grados){
     
     dir.create(paste0("C:/TFG/pruebaslaboratorio/graficos_Cp_juntos/"))
     
-    jpeg(paste0("C:/TFG/pruebaslaboratorio/graficos_Cp_juntos/",porcentaje,".jpeg"))
+    #jpeg(paste0("C:/TFG/pruebaslaboratorio/graficos_Cp_juntos/",porcentaje,".jpeg"))
+    tiff(paste0("C:/TFG/pruebaslaboratorio/graficos_Cp_juntos/",porcentaje,".tiff"), width = 7, height =7, units = 'in', res = 300)
     colores<- c("orange","red","blue","dodgerblue4","purple")
     pch_dif<-c(0:5)
     for(i in 1:(length(lista_cpmsVmax))){
