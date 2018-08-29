@@ -137,7 +137,8 @@ ploteo_experimento_estandar<- function(datos,grados){
     
     dir.create(paste0("C:/TFG/pruebaslaboratorio/graficos_estandar_fit",grados,"/"))
     
-    jpeg(paste0("C:/TFG/pruebaslaboratorio/graficos_estandar_fit",grados,"/",nombre,".jpeg"))
+    #jpeg(paste0("C:/TFG/pruebaslaboratorio/graficos_estandar_fit",grados,"/",nombre,".jpeg"))
+    tiff(paste0("C:/TFG/pruebaslaboratorio/graficos_estandar_fit",grados,"/",nombre,".tiff"), width = 7, height =7, units = 'in', res = 300)
     lambda_Cp<- lambda_Cp_clean
     colores<- c("orange","red","blue","dodgerblue4","purple","black")
     pch_dif<-c(0:5)
@@ -271,7 +272,10 @@ ploteo_experimento_lectura<- function(datos,grados){
     
     dir.create(paste0("C:/TFG/pruebaslaboratorio/graficos_lectura_fit",grados,"/"))
     
-    jpeg(paste0("C:/TFG/pruebaslaboratorio/graficos_lectura_fit",grados,"/",nombre,".jpeg"))
+    #jpeg(paste0("C:/TFG/pruebaslaboratorio/graficos_lectura_fit",grados,"/",nombre,".jpeg"))
+    tiff(paste0("C:/TFG/pruebaslaboratorio/graficos_lectura_fit",grados,"/",nombre,".tiff"), width = 7, height =7, units = 'in', res = 300)
+    
+    
     lambda_Cp<- lambda_Cp_clean
     colores<- c("orange","red","blue","dodgerblue4","purple","black")
     pch_dif<-c(0:5)
@@ -409,7 +413,10 @@ ploteo_experimento_media<- function(datos,grados){
     
     dir.create(paste0("C:/TFG/pruebaslaboratorio/graficos_media_fit",grados,"/"))
     
-    jpeg(paste0("C:/TFG/pruebaslaboratorio/graficos_media_fit",grados,"/",nombre,".jpeg"))
+    #jpeg(paste0("C:/TFG/pruebaslaboratorio/graficos_media_fit",grados,"/",nombre,".jpeg"))
+    tiff(paste0("C:/TFG/pruebaslaboratorio/graficos_media_fit",grados,"/",nombre,".tiff"), width = 7, height =7, units = 'in', res = 300)
+    
+    
     lambda_Cp<- lambda_Cp_clean
     colores<- c("orange","red","blue","dodgerblue4","purple","black")
     pch_dif<-c(0:5)
@@ -616,7 +623,11 @@ ploteo_experimento_individual<- function(datos,grados,groups_ind){
       }
       
       
-      jpeg(paste0("C:/TFG/pruebaslaboratorio/graficos_fit",grados,"_",nombre,"/",names(xx_data)[[ll]],".jpeg"))
+      #jpeg(paste0("C:/TFG/pruebaslaboratorio/graficos_fit",grados,"_",nombre,"/",names(xx_data)[[ll]],".jpeg"))
+      tiff(paste0("C:/TFG/pruebaslaboratorio/graficos_fit",grados,"_",nombre,"/",names(xx_data)[[ll]],".tiff"), width = 7, height =7, units = 'in', res = 300)
+      
+      
+      
       lambda_Cp<- lambda_Cp_clean
       colores<- c("orange","red","blue","dodgerblue4","purple","black")
       pch_dif<-c(0:5)
@@ -690,7 +701,13 @@ ajuste_RPM_Resistencia<- function(df){
   for (pruebas in 1:length(lista_rpm_resistencia_ordenada)) {
     dir.create(paste0("C:/TFG/pruebaslaboratorio/graficos_RPM_Resistencia/"))
     
-    jpeg(paste0("C:/TFG/pruebaslaboratorio/graficos_RPM_Resistencia/",nombres_lista[pruebas],".jpeg"))
+    #jpeg(paste0("C:/TFG/pruebaslaboratorio/graficos_RPM_Resistencia/",nombres_lista[pruebas],".jpeg"))
+    tiff(paste0("C:/TFG/pruebaslaboratorio/graficos_RPM_Resistencia/",nombres_lista[pruebas],".tiff"), width = 7, height =7, units = 'in', res = 300)
+    
+    
+    
+    
+    
     x<-as.numeric(as.character(lista_rpm_resistencia_ordenada[[pruebas]][,2]))
     y<- as.numeric(as.character(lista_rpm_resistencia_ordenada[[pruebas]][,1]))
     m<-nls(y~a*x/(b+x))
@@ -752,7 +769,11 @@ ajuste_RPM_Resistencia_so<- function(df,tabla_sinout){
   for (pruebas in 1:length(lista_rpm_resistencia_ordenada)) {
     dir.create(paste0("C:/TFG/pruebaslaboratorio/graficos_RPM_Resistencia_sinout/"))
     
-    jpeg(paste0("C:/TFG/pruebaslaboratorio/graficos_RPM_Resistencia/",nombres_lista[pruebas],".jpeg"))
+    #jpeg(paste0("C:/TFG/pruebaslaboratorio/graficos_RPM_Resistencia/",nombres_lista[pruebas],".jpeg"))
+    tiff(paste0("C:/TFG/pruebaslaboratorio/graficos_RPM_Resistencia/",nombres_lista[pruebas],".tiff"), width = 7, height =7, units = 'in', res = 300)
+    
+    
+    
     x<-as.numeric(as.character(lista_rpm_resistencia_ordenada[[pruebas]][,2]))
     x_so<-tabla_sinout[[pruebas]][,2]
     y<- as.numeric(as.character(lista_rpm_resistencia_ordenada[[pruebas]][,1]))
@@ -990,7 +1011,10 @@ ploteo_experimento_estandar_RPM_regresion<- function(datos,grados){
     
     dir.create(paste0("C:/TFG/pruebaslaboratorio/graficos_RPMreg_estandar_fit",grados,"/"))
     
-    jpeg(paste0("C:/TFG/pruebaslaboratorio/graficos_RPMreg_estandar_fit",grados,"/",nombre,".jpeg"))
+    #jpeg(paste0("C:/TFG/pruebaslaboratorio/graficos_RPMreg_estandar_fit",grados,"/",nombre,".jpeg"))
+    tiff(paste0("C:/TFG/pruebaslaboratorio/graficos_RPMreg_estandar_fit",grados,"/",nombre,".tiff"), width = 7, height =7, units = 'in', res = 300)
+    
+    
     lambda_Cp<- lambda_Cp_clean
     colores<- c("orange","red","blue","dodgerblue4","purple","black")
     pch_dif<-c(0:5)
@@ -1127,7 +1151,11 @@ ploteo_experimento_lectura_RPM_regresion<- function(datos,grados){
     
     dir.create(paste0("C:/TFG/pruebaslaboratorio/graficos_RPMreg_lectura_fit",grados,"/"))
     
-    jpeg(paste0("C:/TFG/pruebaslaboratorio/graficos_RPMreg_lectura_fit",grados,"/",nombre,".jpeg"))
+    #jpeg(paste0("C:/TFG/pruebaslaboratorio/graficos_RPMreg_lectura_fit",grados,"/",nombre,".jpeg"))
+    tiff(paste0("C:/TFG/pruebaslaboratorio/graficos_RPMreg_lectura_fit",grados,"/",nombre,".tiff"), width = 7, height =7, units = 'in', res = 300)
+    
+    
+    
     lambda_Cp<- lambda_Cp_clean
     colores<- c("orange","red","blue","dodgerblue4","purple","black")
     pch_dif<-c(0:5)
@@ -1265,7 +1293,12 @@ ploteo_experimento_media_RPM_regresion<- function(datos,grados){
     
     dir.create(paste0("C:/TFG/pruebaslaboratorio/graficos_RPMreg_media_fit",grados,"/"))
     
-    jpeg(paste0("C:/TFG/pruebaslaboratorio/graficos_RPMreg_media_fit",grados,"/",nombre,".jpeg"))
+    #jpeg(paste0("C:/TFG/pruebaslaboratorio/graficos_RPMreg_media_fit",grados,"/",nombre,".jpeg"))
+    tiff(paste0("C:/TFG/pruebaslaboratorio/graficos_RPMreg_media_fit",grados,"/",nombre,".tiff"), width = 7, height =7, units = 'in', res = 300)
+    
+    
+    
+    
     lambda_Cp<- lambda_Cp_clean
     colores<- c("orange","red","blue","dodgerblue4","purple","black")
     pch_dif<-c(0:5)
@@ -1411,7 +1444,10 @@ ploteo_experimento_estandar_RPM_regresion_CPmax<- function(datos,grados){
     
     dir.create(paste0("C:/TFG/pruebaslaboratorio/graficos_Cpmax_RPMreg_estandar_fit",grados,"/"))
     
-    jpeg(paste0("C:/TFG/pruebaslaboratorio/graficos_Cpmax_RPMreg_estandar_fit",grados,"/",nombre,".jpeg"))
+    #jpeg(paste0("C:/TFG/pruebaslaboratorio/graficos_Cpmax_RPMreg_estandar_fit",grados,"/",nombre,".jpeg"))
+    tiff(paste0("C:/TFG/pruebaslaboratorio/graficos_Cpmax_RPMreg_estandar_fit",grados,"/",nombre,".tiff"), width = 7, height =7, units = 'in', res = 300)
+    
+    
     lambda_Cp<- lambda_Cp_clean
     colores<- c("orange","red","blue","dodgerblue4","purple","black")
     pch_dif<-c(0:5)
@@ -1510,7 +1546,7 @@ for (groups_ind in 1:group_number) {
   xx_percentaje<-list()
   for (per in 1:percentaje_number) {
     xx_perc<- xx %>% group_by(.,porcentaje) %>% select_groups(per)
-    xx_perc<-cbind(xx_perc$cp_est,xx_perc$watts,xx_perc$Vviento_estandar)
+    xx_perc<-cbind(xx_perc$cp_est,xx_perc$watts,xx_perc$`m/s`)
     colnames(xx_perc)<- c("cp","watts", "Vviento")
     xx_percentaje[[per]]<- xx_perc
     
@@ -1554,6 +1590,7 @@ for(i in 1:length(lista_watts_Vviento_max)){
   plot(NULL,xlim=xlimite,
        ylim = ylimite,cex=0.005, yaxt ="n",
        xlab = "Velocidad del viento (m/s)", ylab = "Potencia (W)", bty='L')
+  title(main= "Curvas de potencia")
   par(new=T)
   lines(xx, predict(fit_curva, data.frame(x=xx)), col=colores[i],lwd=1,lty=2)
   points(x,y, pch= pch_dif[i])
@@ -1845,8 +1882,12 @@ RPM_por_porcentaje<-function(df){
     colores<- c("orange","red","blue","dodgerblue4","purple")
     dir.create(paste0("C:/TFG/pruebaslaboratorio/graficos_RPM_comparativa/"))
     
-    jpeg(paste0("C:/TFG/pruebaslaboratorio/graficos_RPM_comparativa/",porcentaje_num[j],".jpeg"))
-    plot(NULL, xlim = c(0,8000), ylim = c(0,y_lim),yaxt ="n",
+    #jpeg(paste0("C:/TFG/pruebaslaboratorio/graficos_RPM_comparativa/",porcentaje_num[j],".jpeg"))
+    tiff(paste0("C:/TFG/pruebaslaboratorio/graficos_RPM_comparativa/",porcentaje_num[j],".tiff"), width = 7, height =7, units = 'in', res = 300)
+    
+    
+    
+     plot(NULL, xlim = c(0,8000), ylim = c(0,y_lim),yaxt ="n",
          xlab =  expression(paste("Resistencia (",Omega,")")), 
          ylab = "Velocidad Angular (RPM)", bty='L')
     
