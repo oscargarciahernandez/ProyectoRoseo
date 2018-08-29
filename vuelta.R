@@ -1,12 +1,13 @@
 #archivo binario .nc. Me hace falta RNetCDF
 library(RNetCDF)
 library(dplyr)
-
+library(here)
+library(openair)
 #Creo un objeto string con el nombre completo del archivo
 #PATH+nombre
-inputpath<-"C:/TFG/appshiny/Rprojecto/TFG_mario/"
+inputpath<- here()
 
-inputfile<-paste(inputpath,"bilbo1979_2017.nc",sep="" )
+inputfile<-paste(inputpath,"/bilbo1979_2017.nc",sep="" )
 
 #Acceder al contenido del archivo
 # 2 pasos: 1.Abro el archivo; 2. Leo el archivo
@@ -68,6 +69,49 @@ grup_vel<-cut(tabla_loc8$wind_abs,seq(0,max(tabla_loc8$wind_abs),by=0.5),
               labels = seq(0.5,max(tabla_loc8$wind_abs),by=0.5), include.lowest = T,right = T)
 tabla_loc8<- as.data.frame(cbind(tabla_loc8[,1:5],grup_vel))
 
+
+
+
+lon<- unique(tabla$longitude_1)
+lat<-unique(tabla$latitude_1)
+for (longitud in 1:length(lon)) {
+  
+  tabla_lon<- tabla[tabla$longitude_1 == lon[longitud],]
+  
+  for(latitude in 1:length(lat)){
+    
+    tabla_lon_lat<- tabla_lon[tabla_lon$latitude_1==lat[latitude],]
+    
+    prueba<-as.data.frame(cbind(tabla_lon_lat$wind_abs,tabla_lon_lat8$ind_dir_trig_from_degrees))
+    colnames(prueba)<- c("ws","wd")
+    
+    breaks_rose<-length(seq(0,max(prueba[,1]),by=1))
+    
+    dir.create(paste0("C:/TFG/pruebaslaboratorio/rosasdelosvientos/","/"))
+    
+    jpeg(paste0("C:/TFG/pruebaslaboratorio/graficos_lectura_fit",lat[latitude],lon[longitud],".tiff"))
+    
+    
+    windRose(prueba,ws.int = 1,angle = 22.5,breaks = breaks_rose,
+             paddle = F, annotate = F,key.position = "right")
+    
+    
+    
+  }
+  
+}
+
+prueba<-as.data.frame(cbind(tabla_loc8$wind_abs,tabla_loc8$ind_dir_trig_from_degrees))
+colnames(prueba)<- c("ws","wd")
+
+breaks_rose<-length(seq(0,max(prueba[,1]),by=1))
+
+windRose(prueba,ws.int = 1,angle = 22.5,breaks = breaks_rose,
+         paddle = F, annotate = F,key.position = "right")
+
+
+
+
 ##identificar numero de valores por cada velocidad del viento. 
 dist_vel<-as.data.frame(table(tabla_loc8$grup_vel))
 dist_total<-sum(dist_vel$Freq)
@@ -93,6 +137,11 @@ dist_vel_NO_per<- as.data.frame(dist_vel_NO$Freq/dist_total)
 dist_vel_NO_anual<-as.data.frame(dist_vel_NO_per*8600)
 names(dist_vel_NO_anual)<-"horas anuales"
 barplot(dist_vel_NO_anual$`horas anuales`)
+
+
+
+
+
 
 
 ##Barplot con concentrador
