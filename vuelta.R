@@ -97,11 +97,10 @@ for (longitud in 1:length(lon)) {
       
       tiff(paste0(path_here,lat[latitude],lon[longitud],".tiff"), width = 7, height =7, units = 'in', res = 300)
       
-    par(new=T)
       windRose(prueba,ws.int = 1,angle = 22.5,breaks = breaks_rose,
                paddle = F, annotate = F,key.position = "right")
       
-      dev.off  
+      dev.off()  
     }
     
   
