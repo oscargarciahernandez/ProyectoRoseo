@@ -95,11 +95,14 @@ for (longitud in 1:length(lon)) {
       
       
       
-      tiff(paste0(path_here,lat[latitude],lon[longitud],".tiff"), width = 7, height =7, units = 'in', res = 300)
+      tiff(paste0(path_here,lat[latitude],"_",lon[longitud],".tiff"), width = 7, height =7, units = 'in', res = 300)
       
       windRose(prueba,ws.int = 1,angle = 22.5,breaks = breaks_rose,
                paddle = F, annotate = F,key.position = "right")
-      
+      #par(new=T)
+      #subtitle<- paste0("Lon = ", lon[longitud], "Lat = ", lat[latitude])
+      #titulo<- paste0("Rosa de los vientos \n", subtitle)
+      #title(main = titulo)
       dev.off()  
     }
     
