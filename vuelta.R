@@ -82,20 +82,29 @@ for (longitud in 1:length(lon)) {
     
     tabla_lon_lat<- tabla_lon[tabla_lon$latitude_1==lat[latitude],]
     
-    prueba<-as.data.frame(cbind(tabla_lon_lat$wind_abs,tabla_lon_lat8$ind_dir_trig_from_degrees))
-    colnames(prueba)<- c("ws","wd")
+    if(length(tabla_lon_lat[,1])==0){
+      
+    }else{
+      prueba<-as.data.frame(cbind(tabla_lon_lat$wind_abs,tabla_lon_lat$ind_dir_trig_from_degrees))
+      colnames(prueba)<- c("ws","wd")
+      
+      breaks_rose<-length(seq(0,max(prueba[,1]),by=1))
+      
+      path_here<-paste0(here(),"/graficas_rosas/")
+      dir.create(path_here)
+      
+      
+      
+      tiff(paste0(path_here,lat[latitude],lon[longitud],".tiff"), width = 7, height =7, units = 'in', res = 300)
+      
+    par(new=T)
+      windRose(prueba,ws.int = 1,angle = 22.5,breaks = breaks_rose,
+               paddle = F, annotate = F,key.position = "right")
+      
+      dev.off  
+    }
     
-    breaks_rose<-length(seq(0,max(prueba[,1]),by=1))
-    
-    dir.create(paste0("C:/TFG/pruebaslaboratorio/rosasdelosvientos/","/"))
-    
-    jpeg(paste0("C:/TFG/pruebaslaboratorio/graficos_lectura_fit",lat[latitude],lon[longitud],".tiff"))
-    
-    
-    windRose(prueba,ws.int = 1,angle = 22.5,breaks = breaks_rose,
-             paddle = F, annotate = F,key.position = "right")
-    
-    
+  
     
   }
   
