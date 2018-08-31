@@ -36,15 +36,15 @@ idlat<-which.min(abs(latitude_1-latref0))
 latitude_1[idlat]
 
 #los datos estan organizados como (longitud,latitud,tiempo), ahora estamos obteniendo todos los datos de velocidad para un punto especifico y todo el tiempo
-u10<-var.get.nc(SATALT_ini,"u10")
+u10<-var.get.nc(SATALT_ini,"u10", unpack = T)
 #Corregir por el factor de escala
-u10<-u10* 0.0005974113 + 6.843877 #multiplicado por factor de escala + offset u10
+#u10<-u10* 0.0005974113 + 6.843877 #multiplicado por factor de escala + offset u10
 
 
 #2.4 10 metre  Vwind component
-v10<-var.get.nc(SATALT_ini,"v10")
+v10<-var.get.nc(SATALT_ini,"v10",unpack = T)
 #Corregir por el factor de escala
-v10<-v10*0.0004953484-0.2738096 ##multiplicado por factor de escala + offset v10
+#v10<-v10*0.0004953484-0.2738096 ##multiplicado por factor de escala + offset v10
 
 wind_abs = sqrt(u10^2 + v10^2)
 wind_dir_trig_to = atan2(u10/wind_abs, v10/wind_abs) 
@@ -59,33 +59,39 @@ summary(wind_abs80)
 
 
 #tablita(latitude_1,longitude_1,time_2,u10,v10)
-tabla<-cbind(longitude_1,latitude_1,time_1,wind_abs,ind_dir_trig_from_degrees)
-tabla<- as.data.frame(tabla)
+#tabla<-cbind(longitude_1,latitude_1,time_1,wind_abs,ind_dir_trig_from_degrees)
+#tabla<- as.data.frame(tabla)
 
+tabla_loc<-expand.grid(longitude_1,latitude_1)
+tabla_loc_time<- expand.grid(tabla_loc[,1],time_1)
+tabla<- as.data.frame(cbind(tabla_loc_time[,1],tabla_loc[,2],tabla_loc_time[,2],
+                            wind_abs,ind_dir_trig_from_degrees))
+
+names(tabla)<- c("longitud","latitud","time","ws","wd")
 
 ## localizacion 8
-tabla_loc8<-tabla[which(tabla$longitude_1==356.875 & tabla$latitude_1==43.375),]
-grup_vel<-cut(tabla_loc8$wind_abs,seq(0,max(tabla_loc8$wind_abs),by=0.5),
-              labels = seq(0.5,max(tabla_loc8$wind_abs),by=0.5), include.lowest = T,right = T)
-tabla_loc8<- as.data.frame(cbind(tabla_loc8[,1:5],grup_vel))
+#tabla_loc8<-tabla[which(tabla$longitude_1==356.875 & tabla$latitude_1==43.375),]
+#grup_vel<-cut(tabla_loc8$wind_abs,seq(0,max(tabla_loc8$wind_abs),by=0.5),
+              #labels = seq(0.5,max(tabla_loc8$wind_abs),by=0.5), include.lowest = T,right = T)
+#tabla_loc8<- as.data.frame(cbind(tabla_loc8[,1:5],grup_vel))
 
 
 
 
-lon<- unique(tabla$longitude_1)
-lat<-unique(tabla$latitude_1)
+lon<- unique(tabla$longitud)
+lat<-unique(tabla$latitud)
 for (longitud in 1:length(lon)) {
   
-  tabla_lon<- tabla[tabla$longitude_1 == lon[longitud],]
+  tabla_lon<- tabla[tabla$longitud == lon[longitud],]
   
   for(latitude in 1:length(lat)){
     
-    tabla_lon_lat<- tabla_lon[tabla_lon$latitude_1==lat[latitude],]
+    tabla_lon_lat<- tabla_lon[tabla_lon$latitud==lat[latitude],]
     
     if(length(tabla_lon_lat[,1])==0){
       
     }else{
-      prueba<-as.data.frame(cbind(tabla_lon_lat$wind_abs,tabla_lon_lat$ind_dir_trig_from_degrees))
+      prueba<-as.data.frame(cbind(tabla_lon_lat$ws,tabla_lon_lat$wd))
       colnames(prueba)<- c("ws","wd")
       
       breaks_rose<-length(seq(0,max(prueba[,1]),by=1))
