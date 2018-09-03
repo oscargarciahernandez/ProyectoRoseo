@@ -1,7 +1,7 @@
 require(ggplot2)
 require(RColorBrewer)
 
-plot.windrose1 <- function(data,
+plot.windrose <- function(data,
                           spd,
                           dir,
                           spdres = 2,
@@ -111,8 +111,7 @@ plot.windrose1 <- function(data,
     scale_fill_manual(name = "Wind Speed (m/s)", 
                       values = spd.colors,
                       drop = FALSE) +
-    xlim(-0.1,0.1)
-    theme(panel.grid.major = element_line(colour = NA), axis.line = element_line(colour = NA), plot.background = element_rect(fill= "transparent", colour= NA), panel.background = element_rect(fill= "transparent", colour = NA))+
+    theme(panel.grid.major = element_line(colour = "NA"), axis.line = element_line(colour = NA), plot.background = element_rect(fill= "transparent", colour= NA), panel.background = element_rect(fill= "transparent", colour = NA))+
   xlab("")+ ylab("")+ guides(fill=guide_legend(title="Direction")) + theme(plot.title = element_text(size=18, face= "bold", color = "burlywood1", vjust = -3, hjust = -0.15), axis.title.x = element_text(size= 8, color = "cornsilk1", hjust = 1.05, vjust = 1.4), 
                                                                                                                      axis.text.y=element_blank(), axis.ticks.y = element_blank(), axis.text.x = element_blank(),
                                                                                                                      legend.position = "none")
@@ -131,6 +130,6 @@ plot.windrose1 <- function(data,
 }
 
 prueba_windrose<-tabla[tabla$longitud==357 & tabla$latitud==43.5, ]
-plot.windrose1(prueba_windrose, spd = "ws",dir = "wd")
+plot.windrose(prueba_windrose, spd = "ws",dir = "wd")
 
  

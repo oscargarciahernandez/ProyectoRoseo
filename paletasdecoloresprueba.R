@@ -13,8 +13,6 @@ for (i in 1:length(todaslaspaletasposibles)) {
   
   path_here<-paste0(here(),"/pruebapaletas/")
   dir.create(path_here)
-  tiff(paste0(path_here,"mapa",paleta,".tiff"), width = 7, height =7, units = 'in', res = 300)
   oyee_1+oyee$subgrobs
-  dev.off()
+  ggsave(paste0(path_here,"mapa",paleta,".tiff"), device = "tiff", dpi=300,width = 7, height =7, units = 'in')
 }
- 
