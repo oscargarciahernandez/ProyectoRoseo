@@ -1,5 +1,8 @@
-install.packages("ggmap")
+#install.packages("ggmap")
 library(ggmap)
+library(here)
+
+source(here('vuelta.R'))
 
 
 
@@ -51,15 +54,16 @@ ggmap(prueba_map_con_etiquetas)+
 dev.off()  
 
 tabla_prueba<- tabla
+source(here('Windrose_sin_nada.R'))
 
 plot.windrose(tabla, spd = "ws",dir = "wd")
   
 oyee<- tabla_prueba%>%group_by(., longitud,latitud)%>% do(subplots= plot.windrose(., spd = "ws",dir="wd",dirres = 22.5,spdres = 1,spdseq = seq(0,20,1)))%>%
 mutate(subgrobs = list(annotation_custom(ggplotGrob(subplots),
-                                         x = lon - 1,      # change from 1 to other 
-                                         y = lat - 1,      # values if necessary,
-                                         xmax = lon + 1,   # depending on the map's
-                                         ymax = lat + 1))) # resolution.
+                                         x = longitud-360-0.1,      # change from 1 to other 
+                                         y = latitud-0.1,      # values if necessary,
+                                         xmax = longitud-360+0.1,   # depending on the map's
+                                         ymax = latitud+0.1))) # resolution.
 
 oyee_1<- ggmap(prueba_map_con_etiquetas)+coord_fixed()
 

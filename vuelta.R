@@ -77,7 +77,7 @@ names(tabla)<- c("longitud","latitud","time","ws","wd")
 
 
 
-
+###ploteo de rosas de los vientos
 lon<- unique(tabla$longitud)
 lat<-unique(tabla$latitud)
 for (longitud in 1:length(lon)) {
@@ -118,13 +118,6 @@ for (longitud in 1:length(lon)) {
   
 }
 
-prueba<-as.data.frame(cbind(tabla_loc8$wind_abs,tabla_loc8$ind_dir_trig_from_degrees))
-colnames(prueba)<- c("ws","wd")
-
-breaks_rose<-length(seq(0,max(prueba[,1]),by=1))
-
-windRose(prueba,ws.int = 1,angle = 22.5,breaks = breaks_rose,
-         paddle = F, annotate = F,key.position = "right")
 
 
 
