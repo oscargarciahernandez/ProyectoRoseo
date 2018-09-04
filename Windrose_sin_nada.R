@@ -104,7 +104,7 @@ plot.windrose <- function(data,
   p.windrose <- ggplot(data = data,
                        aes(x = dir.binned,
                            fill = spd.binned)) +
-    geom_bar() + 
+    geom_bar(width = 1,color="black", size=0.07, alpha=0.5) + 
     scale_x_discrete(drop = FALSE,
                      labels = waiver()) +
     coord_polar(start = -((dirres/2)/360) * 2*pi) +
@@ -129,7 +129,3 @@ plot.windrose <- function(data,
   return(p.windrose)
 }
 
-prueba_windrose<-tabla[tabla$longitud==357 & tabla$latitud==43.5, ]
-plot.windrose(prueba_windrose, spd = "ws",dir = "wd")
-
- 

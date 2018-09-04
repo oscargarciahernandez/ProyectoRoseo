@@ -69,84 +69,140 @@ tabla<- as.data.frame(cbind(tabla_loc_time[,1],tabla_loc[,2],tabla_loc_time[,2],
 
 names(tabla)<- c("longitud","latitud","time","ws","wd")
 
-## localizacion 8
-#tabla_loc8<-tabla[which(tabla$longitude_1==356.875 & tabla$latitude_1==43.375),]
-#grup_vel<-cut(tabla_loc8$wind_abs,seq(0,max(tabla_loc8$wind_abs),by=0.5),
-              #labels = seq(0.5,max(tabla_loc8$wind_abs),by=0.5), include.lowest = T,right = T)
-#tabla_loc8<- as.data.frame(cbind(tabla_loc8[,1:5],grup_vel))
+tabla_localizacion<-tabla[tabla$longitud==lon[2] & tabla$latitud==lat[2],] 
+tabla_localizacion<-tabla_localizacion %>% mutate(grup_vel=cut(tabla_localizacion$ws,
+                                           seq(0,max(tabla_localizacion$ws),by=0.5),
+                                           labels = seq(0.5,max(tabla_localizacion$ws),by=0.5), 
+                                           include.lowest = T,right = T))
+
+tabla_localizacion_altura<- as.data.frame(tabla_localizacion %>% mutate(ws=ws*log(50/1) / log(10/1))) %>% 
+  mutate(grup_vel=cut(tabla_localizacion_altura$ws,
+                       seq(0,max(tabla_localizacion_altura$ws),by=0.5),
+                       labels = seq(0.5,max(tabla_localizacion_altura$ws),by=0.5), 
+                       include.lowest = T,right = T))
 
 
 
-###ploteo de rosas de los vientos
-lon<- unique(tabla$longitud)
-lat<-unique(tabla$latitud)
-for (longitud in 1:length(lon)) {
-  
-  tabla_lon<- tabla[tabla$longitud == lon[longitud],]
-  
-  for(latitude in 1:length(lat)){
-    
-    tabla_lon_lat<- tabla_lon[tabla_lon$latitud==lat[latitude],]
-    
-    if(length(tabla_lon_lat[,1])==0){
-      
-    }else{
-      prueba<-as.data.frame(cbind(tabla_lon_lat$ws,tabla_lon_lat$wd))
-      colnames(prueba)<- c("ws","wd")
-      
-      breaks_rose<-length(seq(0,max(prueba[,1]),by=1))
-      
-      path_here<-paste0(here(),"/graficas_rosas/")
-      dir.create(path_here)
-      
-      
-      
-      tiff(paste0(path_here,lat[latitude],"_",lon[longitud],".tiff"), width = 7, height =7, units = 'in', res = 300)
-      
-      windRose(prueba,ws.int = 1,angle = 22.5,breaks = breaks_rose,
-               paddle = F, annotate = F,key.position = "right")
-      #par(new=T)
-      #subtitle<- paste0("Lon = ", lon[longitud], "Lat = ", lat[latitude])
-      #titulo<- paste0("Rosa de los vientos \n", subtitle)
-      #title(main = titulo)
-      dev.off()  
-    }
-    
-  
-    
-  }
-  
+### representamos windrose a la altura del edifcio
+path_here<-paste0(here(),"/graficas_rosas/")
+breaks_rose<-length(seq(0,max(tabla_localizacion$wind_he),by=2))
+
+
+tiff(paste0(path_here,"rosa_elegida_he.tiff"), width = 7, height =7, units = 'in', res = 300)
+
+
+windRose(tabla_localizacion_altura, angle = 22.5,
+         breaks = breaks_rose,paddle = F, annotate = F,
+         key.position = "right")
+dev.off()  
+
+
+
+## REalizamos barplot comparativo
+distribuciones_velocidad<- table(tabla_localizacion_altura$grup_vel)
+dist_total<-sum(distribuciones_velocidad)
+distribuciones_velocidad_porcentaje<- distribuciones_velocidad/dist_total
+distribuciones_velocidad_anual<- distribuciones_velocidad_porcentaje*8600
+
+
+
+distribuciones_velocidad10<- table(tabla_localizacion$grup_vel)
+dist_total10<-sum(distribuciones_velocidad10)
+distribuciones_velocidad_porcentaje10<- distribuciones_velocidad10/dist_total10
+distribuciones_velocidad_anual10<- distribuciones_velocidad_porcentaje10*8600
+
+
+add.col<-function(df, new.col) {n.row<-dim(df)[1]
+length(new.col)<-n.row
+cbind(df, new.col)
 }
 
+frame_barplot<- as.data.frame(add.col(distribuciones_velocidad_anual,distribuciones_velocidad_anual10))
+frame_barplot<- as.data.frame(cbind(frame_barplot$df,ifelse(is.na(frame_barplot$new.col), 0,frame_barplot$new.col)))
+names(frame_barplot)<- c("Dist_50","Dist_10")
+row.names(frame_barplot)<- names(distribuciones_velocidad_anual)
+
+
+ggplot(frame_barplot)+
+  geom_bar(aes(x=as.numeric(row.names(frame_barplot)),y=Dist_50),stat = "identity",alpha=.95,fill='lightblue',color='lightblue4', show.legend = T)+
+  geom_bar(aes(x=as.numeric(row.names(frame_barplot)),y=Dist_10),stat = "identity", alpha=.3,fill='pink',color='red',show.legend = T)+
+xlab("Velocidad del viento")+
+ylab("Horas anuales") +
+ geom_point(x=18, y =500, shape=22, size=5, alpha=.95,fill='lightblue',color='lightblue4')+
+geom_point(x=18, y =400, shape=22, size=5, alpha=.3,fill='pink',color='red')+
+annotate("text",label="Distribución de la velocidad del viento a 50 metros", x = 30, y = 500)+
+  annotate("text",label="Distribución de la velocidad del viento a 10 metros", x = 30, y = 400)+
+  theme_bw()
+
+path_here<-paste0(here(),"/barplot/")   
+dir.create(path_here)
+
+ggplot(frame_barplot)+
+  geom_bar(aes(x=as.numeric(row.names(frame_barplot)),y=Dist_50),stat = "identity",alpha=.95,fill='lightblue',color='lightblue4', show.legend = T)+
+  geom_bar(aes(x=as.numeric(row.names(frame_barplot)),y=Dist_10),stat = "identity", alpha=.3,fill='pink',color='red',show.legend = T)+
+  xlab("Velocidad del viento (m/s)")+
+  ylab("Horas anuales") +
+  geom_point(x=18, y =500, shape=22, size=5, alpha=.95,fill='lightblue',color='lightblue4')+
+  geom_point(x=18, y =400, shape=22, size=5, alpha=.3,fill='pink',color='red')+
+  annotate("text",label="Distribución de la velocidad del viento a 50 metros", x = 30, y = 500)+
+  annotate("text",label="Distribución de la velocidad del viento a 10 metros", x = 30, y = 400)+
+  theme_bw()
+
+ggsave(paste0(path_here,"barplotcomparativo.tiff"), device = "tiff", dpi=1200,width =8, height =7, units = 'in')
+
+
+ 
+
+
+tabla_localizacion_NO<-tabla_localizacion_altura[tabla_localizacion_altura$wd < 350 & tabla_localizacion_altura$wd > 314,]
+distribuciones_velocidad_NO<- table(tabla_localizacion_NO$grup_vel)
+dist_total_NO<-sum(distribuciones_velocidad_NO)
+distribuciones_velocidad_porcentaje_NO<- distribuciones_velocidad_NO/dist_total
+distribuciones_velocidad_anual_NO<- distribuciones_velocidad_porcentaje_NO*8600
+tabla_NO<-as.data.frame( cbind(distribuciones_velocidad_anual_NO))
+names(tabla_NO)<- "distribucion"
+
+ggplot(tabla_NO)+
+  geom_bar(aes(x=as.numeric(row.names(tabla_NO)),y=distribucion),
+           stat = "identity",alpha=.95,fill='lightblue',color='lightblue4')+
+  xlab("Velocidad del viento (m/s)")+
+  ylab("Horas anuales") +
+  ggtitle("Distribución de la velocidad del viento  \n dirección Noroeste")+
+  theme_bw()+
+  theme(plot.title = element_text(hjust = 0.5))
+ 
+ggsave(paste0(path_here,"barplotNO.tiff"), device = "tiff", dpi=1200,width =8, height =7, units = 'in')
+       
+ 
 
 
 
 
 ##identificar numero de valores por cada velocidad del viento. 
-dist_vel<-as.data.frame(table(tabla_loc8$grup_vel))
-dist_total<-sum(dist_vel$Freq)
-dist_vel_per<- as.data.frame(dist_vel$Freq/dist_total)
-dist_vel_anual<-as.data.frame(dist_vel_per*8600)
-names(dist_vel_anual)<-"Horas anuales"
-barplot(dist_vel_anual$`Horas anuales`)
+#dist_vel<-as.data.frame(table(tabla_loc8$grup_vel))
+#dist_total<-sum(dist_vel$Freq)
+#dist_vel_per<- as.data.frame(dist_vel$Freq/dist_total)
+#dist_vel_anual<-as.data.frame(dist_vel_per*8600)
+#names(dist_vel_anual)<-"Horas anuales"
+#barplot(dist_vel_anual$`Horas anuales`)
 
 
 ## identificar districucion del viento para Norte-Noroeste (285?, 15?)
-tabla_NO<-tabla_loc8[tabla_loc8$ind_dir_trig_from_degrees>314 & tabla_loc8$ind_dir_trig_from_degrees<346,]
+#tabla_NO<-tabla_loc8[tabla_loc8$ind_dir_trig_from_degrees>314 & tabla_loc8$ind_dir_trig_from_degrees<346,]
 
 
 ##Barplot sin concentrador
-grup_vel_NO<-cut(tabla_NO$wind_abs,seq(0,max(tabla_NO$wind_abs),by=0.5),
-                                   labels = seq(0.5,max(tabla_NO$wind_abs),by=0.5), 
-                                   include.lowest = T,right = T)
-tabla_NO<- as.data.frame(cbind(tabla_NO[,1:5],grup_vel_NO))
+#grup_vel_NO<-cut(tabla_NO$wind_abs,seq(0,max(tabla_NO$wind_abs),by=0.5),
+                                   #labels = seq(0.5,max(tabla_NO$wind_abs),by=0.5), 
+#include.lowest = T,right = T)
+#tabla_NO<- as.data.frame(cbind(tabla_NO[,1:5],grup_vel_NO))
 
-dist_vel_NO<-as.data.frame(table(tabla_NO$grup_vel))
+#dist_vel_NO<-as.data.frame(table(tabla_NO$grup_vel))
 
-dist_vel_NO_per<- as.data.frame(dist_vel_NO$Freq/dist_total)
-dist_vel_NO_anual<-as.data.frame(dist_vel_NO_per*8600)
-names(dist_vel_NO_anual)<-"horas anuales"
-barplot(dist_vel_NO_anual$`horas anuales`)
+#dist_vel_NO_per<- as.data.frame(dist_vel_NO$Freq/dist_total)
+#dist_vel_NO_anual<-as.data.frame(dist_vel_NO_per*8600)
+#names(dist_vel_NO_anual)<-"horas anuales"
+#barplot(dist_vel_NO_anual$`horas anuales`)
 
 
 
