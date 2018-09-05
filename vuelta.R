@@ -3,6 +3,7 @@ library(RNetCDF)
 library(dplyr)
 library(here)
 library(openair)
+library(ggplot2)
 #Creo un objeto string con el nombre completo del archivo
 #PATH+nombre
 inputpath<- here()
@@ -69,14 +70,19 @@ tabla<- as.data.frame(cbind(tabla_loc_time[,1],tabla_loc[,2],tabla_loc_time[,2],
 
 names(tabla)<- c("longitud","latitud","time","ws","wd")
 
+lon<- unique(tabla$longitud)
+lat<-unique(tabla$latitud)
+
+
+
 tabla_localizacion<-tabla[tabla$longitud==lon[2] & tabla$latitud==lat[2],] 
 tabla_localizacion<-tabla_localizacion %>% mutate(grup_vel=cut(tabla_localizacion$ws,
                                            seq(0,max(tabla_localizacion$ws),by=0.5),
                                            labels = seq(0.5,max(tabla_localizacion$ws),by=0.5), 
                                            include.lowest = T,right = T))
 
-tabla_localizacion_altura<- as.data.frame(tabla_localizacion %>% mutate(ws=ws*log(50/1) / log(10/1))) %>% 
-  mutate(grup_vel=cut(tabla_localizacion_altura$ws,
+tabla_localizacion_altura<- as.data.frame(tabla_localizacion %>% mutate(ws=ws*log(50/1) / log(10/1))) 
+tabla_localizacion_altura<-tabla_localizacion_altura %>% mutate(grup_vel=cut(tabla_localizacion_altura$ws,
                        seq(0,max(tabla_localizacion_altura$ws),by=0.5),
                        labels = seq(0.5,max(tabla_localizacion_altura$ws),by=0.5), 
                        include.lowest = T,right = T))
@@ -85,7 +91,7 @@ tabla_localizacion_altura<- as.data.frame(tabla_localizacion %>% mutate(ws=ws*lo
 
 ### representamos windrose a la altura del edifcio
 path_here<-paste0(here(),"/graficas_rosas/")
-breaks_rose<-length(seq(0,max(tabla_localizacion$wind_he),by=2))
+breaks_rose<-length(seq(0,max(tabla_localizacion_altura$ws),by=2))
 
 
 tiff(paste0(path_here,"rosa_elegida_he.tiff"), width = 7, height =7, units = 'in', res = 300)
@@ -173,7 +179,170 @@ ggplot(tabla_NO)+
  
 ggsave(paste0(path_here,"barplotNO.tiff"), device = "tiff", dpi=1200,width =8, height =7, units = 'in')
        
- 
+
+
+
+
+
+
+
+###Creamos un barplot comparativo entre todas las direcciones y la direccion noroeste
+
+frame_barplot_NO<- as.data.frame(add.col(distribuciones_velocidad_anual,distribuciones_velocidad_anual_NO))
+frame_barplot_NO<- as.data.frame(cbind(frame_barplot_NO$df,ifelse(is.na(frame_barplot_NO$new.col), 0,frame_barplot_NO$new.col)))
+names(frame_barplot_NO)<- c("Dist_total","Dist_NO")
+row.names(frame_barplot_NO)<- names(distribuciones_velocidad_anual)
+
+
+
+
+
+
+
+ggplot(frame_barplot_NO)+
+  geom_bar(aes(x=as.numeric(row.names(frame_barplot_NO)),y=Dist_total),stat = "identity",alpha=.95,fill='lightblue',color='lightblue4', show.legend = T)+
+  geom_bar(aes(x=as.numeric(row.names(frame_barplot_NO)),y=Dist_NO),stat = "identity", alpha=.4,fill='pink',color='red',show.legend = T)+
+  xlab("Velocidad del viento (m/s)")+
+  ylab("Horas anuales") +
+  geom_point(x=22, y =300, shape=22, size=5, alpha=.95,fill='lightblue',color='lightblue4')+
+  geom_point(x=22, y =200, shape=22, size=5, alpha=.3,fill='pink',color='red')+
+  annotate("text",label="Distribución de la velocidad del \n viento en todas las direcciones", x = 30, y = 300)+
+  annotate("text",label="Distribución de la velocidad del \n viento en la dirección Noroeste", x = 30, y = 200)+
+  ggtitle("Comparativa de las distribuciones del viento \n en todas las direcciones y en la dirección aprovechable")+
+  theme_bw()+
+  theme(plot.title = element_text(hjust = 0.5))
+
+
+ggsave(paste0(path_here,"barplotNO_comparativa.tiff"), device = "tiff", dpi=1200,width =8, height =7, units = 'in')
+
+
+
+
+
+
+#### ya nos ponemos al calculo de la energia anual producida. Empleando los coeficien
+## la formula de ajuste es y ~ b + a*x^3 
+V_viento<-seq(0,max(tabla_localizacion_altura$ws),by=0.5)
+select_groups <- function(data, groups) {
+  data[sort(unlist(attr(data, "indices")[ groups ])) + 1, ]
+}
+group_number<-length(attr(group_by(df,experimento,angulo), "group"))
+
+coeficientes_Curva_P_V_medida<- grafica_Potencia_V(df,limitex,limitey,1)
+coeficientes_Curva_P_V_estandar<- grafica_Potencia_V(df,limitex,limitey,2)
+
+lista_energias<- list()
+
+
+for (i in 1:group_number) {
+  coefs_medido<- coeficientes_Curva_P_V_medida %>% group_by(., Experimento,Angulo) %>% select_groups(i)
+  coefs_estandar<-  coeficientes_Curva_P_V_estandar %>% group_by(., Experimento,Angulo) %>% select_groups(i)
+  
+  Curva_de_potencia_medida<- coefs_medido$b+coefs_medido$a*V_viento^3
+  Curva_de_potencia_medida<-replace(Curva_de_potencia_medida,which(Curva_de_potencia_medida<0),0)
+  Curva_de_potencia_medida<- Curva_de_potencia_medida[2:80]
+  
+  Curva_de_potencia_estandar<- coefs_estandar$b+coefs_estandar$a*V_viento^3
+  Curva_de_potencia_estandar<-replace(Curva_de_potencia_estandar,which(Curva_de_potencia_estandar<0),0)
+  Curva_de_potencia_estandar<- Curva_de_potencia_estandar[2:80]
+  
+  
+  tabla_dist_pot<- as.data.frame(cbind(tabla_NO, Curva_de_potencia_estandar,Curva_de_potencia_medida))
+  names(tabla_dist_pot)<- c("horas", "est","med")
+  energias<- tabla_dist_pot %>% mutate(energia_est= est*horas, energia_med=med*horas)
+  
+  lista_energias[[i]]<- energias
+  
+  }
+
+names(lista_energias)<- paste0(coeficientes_Curva_P_V_medida[,1],coeficientes_Curva_P_V_medida[,2])
+
+
+
+
+barplot_energias_estandar<-function(){
+  tabla_energia_est<-as.data.frame(matrix(unlist(lapply(lista_energias,"[",,4), use.names = F), byrow = F,ncol = 5))
+  names(tabla_energia_est)<- names(lista_energias)
+  row.names(tabla_energia_est)<- names(distribuciones_velocidad_anual)
+  
+  path_here<-paste0(here(),"/barplot/")
+  
+  
+  
+  
+  ggplot(tabla_energia_est)+
+    geom_bar(aes(x=as.numeric(row.names(tabla_energia_est)),y=concentrador30),stat = "identity",alpha=.9,fill='lightblue',color='lightblue4', show.legend = T)+
+    geom_bar(aes(x=as.numeric(row.names(tabla_energia_est)),y=concentrador45),stat = "identity", alpha=.8,fill='pink',color='red',show.legend = T)+
+    geom_bar(aes(x=as.numeric(row.names(tabla_energia_est)),y=concentrador70),stat = "identity",alpha=.7,fill='green2',color='green4', show.legend = T)+
+    geom_bar(aes(x=as.numeric(row.names(tabla_energia_est)),y=paredNA),stat = "identity", alpha=.6,fill='mediumorchid1',color='mediumorchid4',show.legend = T)+
+    geom_bar(aes(x=as.numeric(row.names(tabla_energia_est)),y=pilotoNA),stat = "identity",alpha=.5,fill='orange',color='orange4', show.legend = T)+
+    xlab("Velocidad del viento (m/s)")+
+    ylab("Energía (W/h)") +
+    geom_point(x=25, y =200, shape=22, size=5, alpha=.5,fill='lightblue',color='lightblue4')+
+    geom_point(x=25, y =180, shape=22, size=5, alpha=.4,fill='pink',color='red')+
+    geom_point(x=25, y =160, shape=22, size=5, alpha=.3,fill='green2',color='green4')+
+    geom_point(x=25, y =140, shape=22, size=5, alpha=.2,fill='mediumorchid1',color='mediumorchid4')+ 
+    geom_point(x=25, y =120, shape=22, size=5,alpha=.1,fill='orange',color='orange4')+
+    annotate("text",label="Concentrador 30º", x = 30, y = 200)+
+    annotate("text",label="Concentrador 45º", x = 30, y = 180)+
+    annotate("text",label="Concentrador 70º", x = 30, y = 160)+
+    annotate("text",label="Pared", x = 27.5, y = 140)+
+    annotate("text",label="Piloto", x = 27.5, y = 120)+
+    ggtitle("Comparativa de las energías anuales producidas empleando las 5 configuraciones \n usando las curvas de potencia generadas con la velocidad estándar")+
+    theme_bw()+
+    theme(plot.title = element_text(hjust = 0.5))
+  
+  ggsave(paste0(path_here,"barplotenergíacomparativa_estandar.tiff"), device = "tiff", dpi=1200,width =8, height =7, units = 'in')
+  
+  return(as.data.frame(colSums(tabla_energia_est)))
+  
+  
+  
+}
+
+barplot_energias_medida<-function(){
+  tabla_energia_est<-as.data.frame(matrix(unlist(lapply(lista_energias,"[",,5), use.names = F), byrow = F,ncol = 5))
+  names(tabla_energia_est)<- names(lista_energias)
+  row.names(tabla_energia_est)<- names(distribuciones_velocidad_anual)
+  
+  path_here<-paste0(here(),"/barplot/")
+  
+  
+  
+  
+  ggplot(tabla_energia_est)+
+    geom_bar(aes(x=as.numeric(row.names(tabla_energia_est)),y=concentrador45),stat = "identity", alpha=.8,fill='pink',color='red',show.legend = T)+
+    geom_bar(aes(x=as.numeric(row.names(tabla_energia_est)),y=concentrador30),stat = "identity",alpha=.9,fill='lightblue',color='lightblue4', show.legend = T)+
+    geom_bar(aes(x=as.numeric(row.names(tabla_energia_est)),y=concentrador70),stat = "identity",alpha=.7,fill='green2',color='green4', show.legend = T)+
+    geom_bar(aes(x=as.numeric(row.names(tabla_energia_est)),y=paredNA),stat = "identity", alpha=.6,fill='mediumorchid1',color='mediumorchid4',show.legend = T)+
+    geom_bar(aes(x=as.numeric(row.names(tabla_energia_est)),y=pilotoNA),stat = "identity",alpha=.5,fill='orange',color='orange4', show.legend = T)+
+    xlab("Velocidad del viento (m/s)")+
+    ylab("Energía (W/h)") +    
+    geom_point(x=25, y =1300, shape=22, size=5, alpha=.1,fill='pink',color='red')+
+    geom_point(x=25, y =1500, shape=22, size=5, alpha=.9,fill='lightblue',color='lightblue4')+
+    geom_point(x=25, y =1100, shape=22, size=5, alpha=.3,fill='green2',color='green4')+
+    geom_point(x=25, y =900, shape=22, size=5, alpha=.2,fill='mediumorchid1',color='mediumorchid4')+ 
+    geom_point(x=25, y =700, shape=22, size=5,alpha=.1,fill='orange',color='orange4')+
+    annotate("text",label="Concentrador 30º", x = 30, y = 1500)+
+    annotate("text",label="Concentrador 45º", x = 30, y = 1300)+
+    annotate("text",label="Concentrador 70º", x = 30, y = 1100)+
+    annotate("text",label="Pared", x = 27.5, y = 900)+
+    annotate("text",label="Piloto", x = 27.5, y = 700)+
+    ggtitle("Comparativa de las energías anuales producidas empleando las 5 configuraciones  \n usando las curvas de potencia generadas con la velocidad medida")+
+    theme_bw()+
+    theme(plot.title = element_text(hjust = 0.5))
+  
+  ggsave(paste0(path_here,"barplotenergíacomparativa_medida.tiff"), device = "tiff", dpi=1200,width =8, height =7, units = 'in')
+  
+  return(as.data.frame(colSums(tabla_energia_est)))
+  
+  
+}
+
+
+
+energia_anual_est<-barplot_energias_estandar()
+energia_anual_med<-barplot_energias_medida()
 
 
 

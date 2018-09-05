@@ -103,26 +103,22 @@ ploteo_CPmax10(df,2)
 ##devuelve un data.frame con los coeficientes. Para posteriormente
 ## hacer lo que queramos con ellos. 
 ## la formula de ajuste es y ~ b + a*x^3 
+##de la regresion. V es para seleccionar entre velocidad medida (1) o velocidad estandar (2 u otro numero)
+
 limitex<- c(0,20)
 limitey<- c(0,40)
-coeficientes_Curva_P_V<- grafica_Potencia_V(df,limitex,limitey)
+coeficientes_Curva_P_V<- grafica_Potencia_V(df,limitex,limitey,2)
+coeficientes_Curva_P_V_medida<- grafica_Potencia_V(df,limitex,limitey,1)
+coeficientes_Curva_P_V_estandar<- grafica_Potencia_V(df,limitex,limitey,2)
 
-df<-add_coef_P_V(df,coeficientes_Curva_P_V)
+
+### Por defecto los coeficientes que se añaden a la tabla df son los coeficientes V_estandar
+
+#df<-add_coef_P_V(df,coeficientes_Curva_P_V)
 
 
 
 #### calculo de la energia anual producida,  CATÁSTROFE¡¡ 
-source(here("vuelta.R"))
-
-V_viento<- seq(0.5,16.5, by= 0.5)
-energia_anual<- vector()
-for (i in 1:length(coeficientes_Curva_P_V[,1])) {
-  Potencia<-coeficientes_Curva_P_V$b[i]+ coeficientes_Curva_P_V$a[i]*V_viento^3
-  Energia<- (dist_vel_NO_anual*Potencia)/1000
-  Energia<- replace(Energia, Energia<0, 0)
-  energia_anual[i]<- sum(Energia)
-}
-tabla_energia_anual<-cbind(coeficientes_Curva_P_V[,1:2],energia_anual)
 
 
 ##Representar las rpms en funcion de las resistencias de manera comparativa
