@@ -854,7 +854,7 @@ ajuste_RPM_Resistencia_so<- function(df,tabla_sinout){
     title(main = maintitle)
     
     R_sinVA<- paste0("Regresión sin VA"," (Correlación= ",as.character(round(cor(y_so,predict(m_so)),3)),")")
-    R_conVA<- paste0("Regresión sin VA"," (Correlación= ",as.character(round(cor(y,predict(m)),3)),")")
+    R_conVA<- paste0("Regresión con VA"," (Correlación= ",as.character(round(cor(y,predict(m)),3)),")")
     
 
     legend("right", inset=c(0,0),
