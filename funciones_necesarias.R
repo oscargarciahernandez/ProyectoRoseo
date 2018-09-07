@@ -34,6 +34,11 @@ df_mutate<-function(tabla_cruda){
                                                                 ifelse(df$porcentaje==60,6.040875,
                                                                        ifelse(df$porcentaje==50,5.474545,NA)))))))
   
+  df%<>% mutate(V_viento_correcion= ifelse(df$experimento != "piloto", (df$`m/s`)/0.7, df$`m/s`))
+  df%<>% mutate(wind_power_correccion = 0.5*1.2*0.27*0.45*(df$V_viento_correcion)^3,
+                TSR_correc = RPM*2*pi*r/60/df$V_viento_correcion,
+                cp_correc = watts/wind_power_correccion)
+  
   
   df%<>% mutate(wind_power_est = 0.5*1.2*0.27*0.45*(df$Vviento_estandar)^3,
                 TSR_est = RPM*2*pi*r/60/df$Vviento_estandar,
@@ -1722,7 +1727,7 @@ ploteo_CPmax10<- function(datos,grados){
     xx_percentaje<-list()
     for (per in 1:percentaje_number) {
       xx_perc<- xx %>% group_by(.,porcentaje) %>% select_groups(per)
-      xx_perc<-cbind(xx_perc$cp_est,xx_perc$TSR_regresion_est,xx_perc$Vviento_estandar)
+      xx_perc<-cbind(xx_perc$cp,xx_perc$TSR,xx_perc$`m/s`)
       colnames(xx_perc)<- c("cp","TSR", "Vviento")
       xx_percentaje[[per]]<- xx_perc
       
