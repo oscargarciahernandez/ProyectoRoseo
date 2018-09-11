@@ -77,20 +77,20 @@ df<-add_coef(df,coeficientes_RPM)
 
 
 ###obtencion de las graficas empleando la velocidad de giro aplicando la regresion para estandar,lectura y media
-ploteo_experimento_estandar_RPM_regresion(df,3)
-ploteo_experimento_lectura_RPM_regresion(df,3)
-#ploteo_experimento_media_RPM_regresion(df,3)
+#ploteo_experimento_estandar_RPM_regresion(df,3)
+#ploteo_experimento_lectura_RPM_regresion(df,3)
+ploteo_experimento_corr_RPM_regresion(df,3)
 
 
 
 
 
 
-tabla_cpmax_tsr<-ploteo_experimento_estandar_RPM_regresion_CPmax(df,2)
+tabla_cpmax_tsr<-ploteo_experimento_estandar_RPM_regresion_CPmax(df,3)
 
 
 #esto para crear la tabla de cpmax y TSR en el documento. 
-#Vmax_cpmax<- sapply(tabla_cpmax_tsr, "[", 6, )
+Vmax_cpmax<- sapply(tabla_cpmax_tsr, "[", 6, )
 
 
 
@@ -103,10 +103,10 @@ ploteo_CPmax10(df,2)
 ##devuelve un data.frame con los coeficientes. Para posteriormente
 ## hacer lo que queramos con ellos. 
 ## la formula de ajuste es y ~ b + a*x^3 
-##de la regresion. V es para seleccionar entre velocidad medida (1) o velocidad estandar (2 u otro numero)
+##de la regresion. V es para seleccionar entre velocidad medida_corregida (1) o velocidad estandar (2 u otro numero)
 
-limitex<- c(0,20)
-limitey<- c(0,40)
+limitex<- c(0,11)
+limitey<- c(0,20)
 coeficientes_Curva_P_V<- grafica_Potencia_V(df,limitex,limitey,2)
 coeficientes_Curva_P_V_medida<- grafica_Potencia_V(df,limitex,limitey,1)
 coeficientes_Curva_P_V_estandar<- grafica_Potencia_V(df,limitex,limitey,2)

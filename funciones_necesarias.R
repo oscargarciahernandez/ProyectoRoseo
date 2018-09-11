@@ -47,6 +47,7 @@ df_mutate<-function(tabla_cruda){
   return(df)
   
 }
+
 ploteo_experimento_estandar<- function(datos,grados){
   df<-datos
   select_groups <- function(data, groups) {
@@ -321,12 +322,9 @@ ploteo_experimento_lectura<- function(datos,grados){
   }
   
 }
-ploteo_experimento_media<- function(datos,grados){
+ploteo_experimento_corr<- function(datos,grados){
   df<-datos
-  df%<>% mutate(Vviento_media = (df$`m/s`+df$Vviento_estandar)/2)
-  df%<>% mutate(wind_power_mean = 0.5*1.2*0.27*0.45*(df$Vviento_media)^3,
-                TSR_mean = RPM*2*pi*r/60/df$Vviento_media,
-                cp_mean = watts/wind_power_mean)
+ 
   select_groups <- function(data, groups) {
     data[sort(unlist(attr(data, "indices")[ groups ])) + 1, ]
   }
@@ -344,7 +342,7 @@ ploteo_experimento_media<- function(datos,grados){
     xx_percentaje<-list()
     for (per in 1:percentaje_number) {
       xx_perc<- xx %>% group_by(.,porcentaje) %>% select_groups(per)
-      xx_perc<-cbind(xx_perc$cp_mean,xx_perc$TSR_mean,xx_perc$Vviento_media)
+      xx_perc<-cbind(xx_perc$cp_correc,xx_perc$TSR_correc,xx_perc$V_viento_correcion)
       colnames(xx_perc)<- c("cp","TSR", "Vviento")
       xx_percentaje[[per]]<- xx_perc
       
@@ -417,10 +415,10 @@ ploteo_experimento_media<- function(datos,grados){
     
     
     
-    dir.create(paste0(here(),"/graficos_media_fit",grados,"/"))
+    dir.create(paste0(here(),"/graficos_correccion_fit",grados,"/"))
     
     #jpeg(paste0(here(),"/graficos_media_fit",grados,"/",nombre,".jpeg"))
-    tiff(paste0(here(),"/graficos_media_fit",grados,"/",nombre,".tiff"), width = 7, height =7, units = 'in', res = 300)
+    tiff(paste0(here(),"/graficos_correccion_fit",grados,"/",nombre,".tiff"), width = 7, height =7, units = 'in', res = 300)
     
     
     lambda_Cp<- lambda_Cp_clean
@@ -910,7 +908,10 @@ add_coef<-function(df,coeficientes_RPM){
   
   df %<>% mutate(RPM_regresion= (as.numeric(as.character(coef_a)) *as.numeric(as.character(resistencia)))/(as.numeric(as.character(coef_b))+as.numeric(as.character(resistencia))))
   df %<>% mutate(diff_rpm=RPM-RPM_regresion, TSR_regresion_est = RPM_regresion*2*pi*r/60/Vviento_estandar,TSR_regresion_lectura = RPM_regresion*2*pi*r/60/`m/s`)
-  }
+  df %<>% mutate(TSR_regresion_corr = RPM_regresion*2*pi*r/60/V_viento_correcion)
+  
+  
+   }
 
 
     
@@ -1201,12 +1202,9 @@ ploteo_experimento_lectura_RPM_regresion<- function(datos,grados){
   }
   
 }
-ploteo_experimento_media_RPM_regresion<- function(datos,grados){
+ploteo_experimento_corr_RPM_regresion<- function(datos,grados){
   df<-datos
-  df%<>% mutate(Vviento_media = (df$`m/s`+df$Vviento_estandar)/2)
-  df%<>% mutate(wind_power_mean = 0.5*1.2*0.27*0.45*(df$Vviento_media)^3,
-                TSR_mean = RPM_regresion*2*pi*r/60/df$Vviento_media,
-                cp_mean = watts/wind_power_mean)
+  
   select_groups <- function(data, groups) {
     data[sort(unlist(attr(data, "indices")[ groups ])) + 1, ]
   }
@@ -1219,12 +1217,17 @@ ploteo_experimento_media_RPM_regresion<- function(datos,grados){
     nombre_2<-as.character(xx$angulo[1])
     nombre<-paste(nombre_1,nombre_2,sep = "_")
     
+    if(is.na(nombre_2)){
+      nombre_grafica<- nombre_1
+    }else{
+      nombre_grafica<-paste(nombre_1," ",nombre_2,"º",sep = "")
+    }
     
     percentaje_number<-length(attr(group_by(xx,porcentaje), "group") )
     xx_percentaje<-list()
     for (per in 1:percentaje_number) {
       xx_perc<- xx %>% group_by(.,porcentaje) %>% select_groups(per)
-      xx_perc<-cbind(xx_perc$cp_mean,xx_perc$TSR_mean,xx_perc$Vviento_media)
+      xx_perc<-cbind(xx_perc$cp_correc,xx_perc$TSR_regresion_corr,xx_perc$V_viento_correcion)
       colnames(xx_perc)<- c("cp","TSR", "Vviento")
       xx_percentaje[[per]]<- xx_perc
       
@@ -1297,10 +1300,10 @@ ploteo_experimento_media_RPM_regresion<- function(datos,grados){
     
     
     
-    dir.create(paste0(here(),"/graficos_RPMreg_media_fit",grados,"/"))
+    dir.create(paste0(here(),"/graficos_RPMreg_corr_fit",grados,"/"))
     
     #jpeg(paste0(here(),"/graficos_RPMreg_media_fit",grados,"/",nombre,".jpeg"))
-    tiff(paste0(here(),"/graficos_RPMreg_media_fit",grados,"/",nombre,".tiff"), width = 7, height =7, units = 'in', res = 300)
+    tiff(paste0(here(),"/graficos_RPMreg_corr_fit",grados,"/",nombre,".tiff"), width = 7, height =7, units = 'in', res = 300)
     
     
     
@@ -1339,6 +1342,10 @@ ploteo_experimento_media_RPM_regresion<- function(datos,grados){
     legend("topright", inset=c(0,0),orden_leyenda[,2],pch = as.numeric(orden_leyenda[,3]),
            text.col = orden_leyenda[,4],ncol = 1,cex = 1)
     
+    subtitle_nom<- paste0("Experimento = ",nombre_grafica)
+    maintitle<- paste0("Gráfica CP-TSR \n",subtitle_nom)
+    title(main = maintitle)
+    
     dev.off()
     
   }
@@ -1373,7 +1380,7 @@ ploteo_experimento_estandar_RPM_regresion_CPmax<- function(datos,grados){
     xx_percentaje<-list()
     for (per in 1:percentaje_number) {
       xx_perc<- xx %>% group_by(.,porcentaje) %>% select_groups(per)
-      xx_perc<-cbind(xx_perc$cp_est,xx_perc$TSR_regresion_est,xx_perc$Vviento_estandar)
+      xx_perc<-cbind(xx_perc$cp_correc,xx_perc$TSR_regresion_corr,xx_perc$V_viento_correcion)
       colnames(xx_perc)<- c("cp","TSR", "Vviento")
       xx_percentaje[[per]]<- xx_perc
       
@@ -1465,7 +1472,7 @@ ploteo_experimento_estandar_RPM_regresion_CPmax<- function(datos,grados){
       xx <- seq(min(x),max(x), by=0.01)
       
       plot(NULL,xlim=c(0,2),
-           ylim = c(0,0.10),cex=0.005, yaxt ="n",
+           ylim = c(0,0.20),cex=0.005, yaxt ="n",
            xlab = "TSR", ylab = "Cp", bty='L')
       par(new=T)
       lines(xx, predict(fit5, data.frame(x=xx)), col=colores[i],lwd=2)
@@ -1475,7 +1482,7 @@ ploteo_experimento_estandar_RPM_regresion_CPmax<- function(datos,grados){
       par(new=T)
     }
     
-    axis(2, at=seq(0,0.1, by=0.02),las=2)
+    axis(2, at=seq(0,0.2, by=0.02),las=2)
     V_viento<-sapply(xx_percentaje,"[",1,3)
     
     leyenda_veintos<-paste0(round(V_viento,digits = 2), " m/s")
@@ -1555,7 +1562,7 @@ for (groups_ind in 1:group_number) {
     V_select<- as.name(paste0("xx_perc$",V))
     
     if(V==1){
-      xx_perc<-cbind(xx_perc$cp_est,xx_perc$watts,xx_perc$`m/s`)
+      xx_perc<-cbind(xx_perc$cp_est,xx_perc$watts,xx_perc$V_viento_correcion)
     }else{
       xx_perc<-cbind(xx_perc$cp_est,xx_perc$watts,xx_perc$Vviento_estandar)
     }
@@ -1727,7 +1734,7 @@ ploteo_CPmax10<- function(datos,grados){
     xx_percentaje<-list()
     for (per in 1:percentaje_number) {
       xx_perc<- xx %>% group_by(.,porcentaje) %>% select_groups(per)
-      xx_perc<-cbind(xx_perc$cp,xx_perc$TSR,xx_perc$`m/s`)
+      xx_perc<-cbind(xx_perc$cp_correc,xx_perc$TSR_correc,xx_perc$V_viento_correcion)
       colnames(xx_perc)<- c("cp","TSR", "Vviento")
       xx_percentaje[[per]]<- xx_perc
       
@@ -1842,7 +1849,7 @@ ploteo_CPmax10<- function(datos,grados){
     legend("topright", inset=c(0,0),leyenda,
            text.col = colores,ncol = 1,cex = 1)
     
-    titulo<- paste0("Comparación de gráficas Cp-TSR a ",vector_nombre_vel[porcentaje],"m/s")
+    titulo<- paste0("Comparación de gráficas Cp-TSR \n con el túnel de viento al 100 %")
     title(main = titulo)
     
     dev.off()
