@@ -260,7 +260,7 @@ names(lista_energias)<- paste0(coeficientes_Curva_P_V_medida[,1],coeficientes_Cu
 
 
 
-barplot_energias_estandar<-function(){
+#barplot_energias_estandar<-function(){
   tabla_energia_est<-as.data.frame(matrix(unlist(lapply(lista_energias,"[",,4), use.names = F), byrow = F,ncol = 5))
   names(tabla_energia_est)<- names(lista_energias)
   row.names(tabla_energia_est)<- names(distribuciones_velocidad_anual)
@@ -318,17 +318,17 @@ barplot_energias_medida<-function(){
     geom_bar(aes(x=as.numeric(row.names(tabla_energia_est)),y=pilotoNA),stat = "identity",alpha=.5,fill='orange',color='orange4', show.legend = T)+
     xlab("Velocidad del viento (m/s)")+
     ylab("Energía (W/h)") +    
-    geom_point(x=25, y =1300, shape=22, size=5, alpha=.1,fill='pink',color='red')+
-    geom_point(x=25, y =1500, shape=22, size=5, alpha=.9,fill='lightblue',color='lightblue4')+
-    geom_point(x=25, y =1100, shape=22, size=5, alpha=.3,fill='green2',color='green4')+
-    geom_point(x=25, y =900, shape=22, size=5, alpha=.2,fill='mediumorchid1',color='mediumorchid4')+ 
-    geom_point(x=25, y =700, shape=22, size=5,alpha=.1,fill='orange',color='orange4')+
-    annotate("text",label="Concentrador 30º", x = 30, y = 1500)+
-    annotate("text",label="Concentrador 45º", x = 30, y = 1300)+
-    annotate("text",label="Concentrador 70º", x = 30, y = 1100)+
-    annotate("text",label="Pared", x = 27.5, y = 900)+
-    annotate("text",label="Piloto", x = 27.5, y = 700)+
-    ggtitle("Comparativa de las energías anuales producidas empleando las 5 configuraciones  \n usando las curvas de potencia generadas con la velocidad medida")+
+    geom_point(x=30, y =1000, shape=22, size=5, alpha=.1,fill='pink',color='red')+
+    geom_point(x=30, y =850, shape=22, size=5, alpha=.9,fill='lightblue',color='lightblue4')+
+    geom_point(x=30, y =700, shape=22, size=5, alpha=.3,fill='green2',color='green4')+
+    geom_point(x=30, y =550, shape=22, size=5, alpha=.2,fill='mediumorchid1',color='mediumorchid4')+ 
+    geom_point(x=30, y =400, shape=22, size=5,alpha=.1,fill='orange',color='orange4')+
+    annotate("text",label="Concentrador 30º", x = 35, y = 850)+
+    annotate("text",label="Concentrador 45º", x = 35, y = 1000)+
+    annotate("text",label="Concentrador 70º", x = 35, y = 700)+
+    annotate("text",label="Pared", x = 32.5, y = 550)+
+    annotate("text",label="Piloto", x = 32.5, y = 400)+
+    ggtitle("Comparativa de las energías anuales producidas empleando las 5 configuraciones")+
     theme_bw()+
     theme(plot.title = element_text(hjust = 0.5))
   
@@ -341,104 +341,7 @@ barplot_energias_medida<-function(){
 
 
 
-energia_anual_est<-barplot_energias_estandar()
+#energia_anual_est<-barplot_energias_estandar()
 energia_anual_med<-barplot_energias_medida()
 
 
-
-
-##identificar numero de valores por cada velocidad del viento. 
-#dist_vel<-as.data.frame(table(tabla_loc8$grup_vel))
-#dist_total<-sum(dist_vel$Freq)
-#dist_vel_per<- as.data.frame(dist_vel$Freq/dist_total)
-#dist_vel_anual<-as.data.frame(dist_vel_per*8600)
-#names(dist_vel_anual)<-"Horas anuales"
-#barplot(dist_vel_anual$`Horas anuales`)
-
-
-## identificar districucion del viento para Norte-Noroeste (285?, 15?)
-#tabla_NO<-tabla_loc8[tabla_loc8$ind_dir_trig_from_degrees>314 & tabla_loc8$ind_dir_trig_from_degrees<346,]
-
-
-##Barplot sin concentrador
-#grup_vel_NO<-cut(tabla_NO$wind_abs,seq(0,max(tabla_NO$wind_abs),by=0.5),
-                                   #labels = seq(0.5,max(tabla_NO$wind_abs),by=0.5), 
-#include.lowest = T,right = T)
-#tabla_NO<- as.data.frame(cbind(tabla_NO[,1:5],grup_vel_NO))
-
-#dist_vel_NO<-as.data.frame(table(tabla_NO$grup_vel))
-
-#dist_vel_NO_per<- as.data.frame(dist_vel_NO$Freq/dist_total)
-#dist_vel_NO_anual<-as.data.frame(dist_vel_NO_per*8600)
-#names(dist_vel_NO_anual)<-"horas anuales"
-#barplot(dist_vel_NO_anual$`horas anuales`)
-
-
-
-
-
-
-
-##Barplot con concentrador
-
-#tabla_NO_x4<- tabla_NO$wind_abs*4
-
-#grup_vel_NO_x4<-cut(tabla_NO_x4,seq(0,max(tabla_NO_x4),by=0.5),
-#                    labels = seq(0.5,max(tabla_NO_x4),by=0.5), 
-#                    include.lowest = T,right = T)
-#tabla_NO_x4<- as.data.frame(cbind(tabla_NO_x4,grup_vel_NO_x4))
-
-#dist_vel_NO_x4<-as.data.frame(table(tabla_NO_x4$grup_vel))
-
-#dist_vel_NO_x4_per<- as.data.frame(dist_vel_NO_x4$Freq/dist_total)
-#dist_vel_NO_x4_anual<-as.data.frame(dist_vel_NO_x4_per*8600)
-#names(dist_vel_NO_x4_anual)<-"horas anuales"
-#barplot(dist_vel_NO_x4_anual$`horas anuales`)
-
-
-
-
-
-### representar la curva de potencia del aerogeneraodor
-#Vviento<-c(3.13,10,17.88)
-#Pot<- c(1,200,1100)  
-#Data_curve<-data.frame(Pot,Vviento)
-#Vviento_serie<-seq(3.13,17.88,by=0.02)
-
-#Fit the linear model
-#pot_fit<- nls(Pot ~ exp(a+b*Vviento),data =Data_curve,start=c(a=0,b=0))
-
-#lm(Pot~exp(a+b*Vviento), data = Data_curve, duis
-###ejecutas pot_fit y te dice que a=2.9527 y b=0.2266
-#a=2.9527
-#b=0.2266
-
-# Check that the estimated coefficient is 25, just as we expected!
-
-#Plot the fitted line
-#plot(Vviento, Pot)
-#lines(Vviento_serie, exp(a+b*Vviento_serie), col = "red")
-
-##la curvva será potencia 
-##0 de 0 a 3.13 m/s
-## exp(2.9527+0.2266*Vviento ) de 3.13 a 17.88
-#tramo_pot<-seq(3,18,by=1)
-#Pot_tramo<- exp(2.9527+0.2266*tramo_pot )/1000
-## 1100 de 17.88 hasta infinito
-
-#E_kwh_1_sin <- dist_vel_NO_anual[3:18,]*Pot_tramo
-#E_kwh_2_sin <- dist_vel_NO_anual[18:length(dist_vel_NO_anual),]*1.1
-
-#E_kwh_1_con <- dist_vel_NO_x4_anual[3:18,]*Pot_tramo
-#E_kwh_2_con <- dist_vel_NO_x4_anual[18:length(dist_vel_NO_x4_anual),]*1.1
-
-
-
-
-
-# try the default settings
-#p0 <- plot.windrose(spd = tabla_loc$wind_abs80,
-                    #dir = tabla_loc$ind_di44r_trig_from_degrees)
-
-#p0 <- plot.windrose(spd = tabla_loc8$wind_abs,
-                    #dir = tabla_loc8$ind_dir_trig_from_degrees)

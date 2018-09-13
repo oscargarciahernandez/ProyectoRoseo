@@ -1,4 +1,3 @@
-
 library(stringr)
 library(magrittr)
 library(here)
@@ -34,19 +33,6 @@ df_mutate<-function(tabla_cruda){
                                                                 ifelse(df$porcentaje==60,6.040875,
                                                                        ifelse(df$porcentaje==50,5.474545,NA)))))))
   
-  df%<>% mutate(V_viento_correcion= ifelse(df$experimento != "piloto", (df$`m/s`)/0.7, df$`m/s`))
-  df%<>% mutate(wind_power_correccion = 0.5*1.2*0.27*0.45*(df$V_viento_correcion)^3,
-                TSR_correc = RPM*2*pi*r/60/df$V_viento_correcion,
-                cp_correc = watts/wind_power_correccion)
-  
-  
-  df%<>% mutate(V_viento_alfa= ifelse(df$experimento != "piloto", ((df$`m/s`)/0.7)/1.85,( df$`m/s`)/1.85))
-  df%<>% mutate(wind_power_alfa = 0.5*1.2*0.50*0.45*(df$V_viento_alfa)^3,
-                TSR_alfa = RPM*2*pi*r/60/df$V_viento_alfa,
-                cp_alfa = watts/wind_power_alfa)
-  
-  
-  
   
   df%<>% mutate(wind_power_est = 0.5*1.2*0.27*0.45*(df$Vviento_estandar)^3,
                 TSR_est = RPM*2*pi*r/60/df$Vviento_estandar,
@@ -55,7 +41,6 @@ df_mutate<-function(tabla_cruda){
   return(df)
   
 }
-
 ploteo_experimento_estandar<- function(datos,grados){
   df<-datos
   select_groups <- function(data, groups) {
@@ -117,12 +102,12 @@ ploteo_experimento_estandar<- function(datos,grados){
         for (i in 1:length(validacion_2[,1])) {
           
           
-            if(i==length(validacion_2[,1])){break}else{
+          if(i==length(validacion_2[,1])){break}else{
+            
+            if(validacion_2[i,1] < validacion_2[(i+1),1]){
+              indeeex[rr]<- as.numeric(i) 
+              rr<-rr+1
               
-              if(validacion_2[i,1] < validacion_2[(i+1),1]){
-                indeeex[rr]<- as.numeric(i) 
-                rr<-rr+1
-               
               
             }
             
@@ -130,7 +115,7 @@ ploteo_experimento_estandar<- function(datos,grados){
         }
         
       }
-  
+      
       
       if(length(indeeex)==0){
         validacion_2<- validacion_2
@@ -253,12 +238,12 @@ ploteo_experimento_lectura<- function(datos,grados){
         for (i in 1:length(validacion_2[,1])) {
           
           
-            if(i==length(validacion_2[,1])){break}else{
+          if(i==length(validacion_2[,1])){break}else{
+            
+            if(validacion_2[i,1] < validacion_2[(i+1),1]){
+              indeeex[rr]<- as.numeric(i) 
+              rr<-rr+1
               
-              if(validacion_2[i,1] < validacion_2[(i+1),1]){
-                indeeex[rr]<- as.numeric(i) 
-                rr<-rr+1
-                
               
             }
             
@@ -330,9 +315,12 @@ ploteo_experimento_lectura<- function(datos,grados){
   }
   
 }
-ploteo_experimento_corr<- function(datos,grados){
+ploteo_experimento_media<- function(datos,grados){
   df<-datos
- 
+  df%<>% mutate(Vviento_media = (df$`m/s`+df$Vviento_estandar)/2)
+  df%<>% mutate(wind_power_mean = 0.5*1.2*0.27*0.45*(df$Vviento_media)^3,
+                TSR_mean = RPM*2*pi*r/60/df$Vviento_media,
+                cp_mean = watts/wind_power_mean)
   select_groups <- function(data, groups) {
     data[sort(unlist(attr(data, "indices")[ groups ])) + 1, ]
   }
@@ -350,7 +338,7 @@ ploteo_experimento_corr<- function(datos,grados){
     xx_percentaje<-list()
     for (per in 1:percentaje_number) {
       xx_perc<- xx %>% group_by(.,porcentaje) %>% select_groups(per)
-      xx_perc<-cbind(xx_perc$cp_correc,xx_perc$TSR_correc,xx_perc$V_viento_correcion)
+      xx_perc<-cbind(xx_perc$cp_mean,xx_perc$TSR_mean,xx_perc$Vviento_media)
       colnames(xx_perc)<- c("cp","TSR", "Vviento")
       xx_percentaje[[per]]<- xx_perc
       
@@ -423,10 +411,10 @@ ploteo_experimento_corr<- function(datos,grados){
     
     
     
-    dir.create(paste0(here(),"/graficos_correccion_fit",grados,"/"))
+    dir.create(paste0(here(),"/graficos_media_fit",grados,"/"))
     
     #jpeg(paste0(here(),"/graficos_media_fit",grados,"/",nombre,".jpeg"))
-    tiff(paste0(here(),"/graficos_correccion_fit",grados,"/",nombre,".tiff"), width = 7, height =7, units = 'in', res = 300)
+    tiff(paste0(here(),"/graficos_media_fit",grados,"/",nombre,".tiff"), width = 7, height =7, units = 'in', res = 300)
     
     
     lambda_Cp<- lambda_Cp_clean
@@ -520,11 +508,11 @@ ploteo_experimento_individual<- function(datos,grados,groups_ind){
   
   Vviento_pared<- unique(df[which(df$experimento=="pared"),][c(3,8)])
   df %<>% mutate(Vviento_estandar_pared = ifelse(df$porcentaje==100,6.059878,
-                                           ifelse(df$porcentaje==90,5.532072,
-                                                  ifelse(df$porcentaje==80,4.973180,
-                                                         ifelse(df$porcentaje==70,4.460114,
-                                                                ifelse(df$porcentaje==60,3.869665,
-                                                                       ifelse(df$porcentaje==50,3.074220,NA)))))))
+                                                 ifelse(df$porcentaje==90,5.532072,
+                                                        ifelse(df$porcentaje==80,4.973180,
+                                                               ifelse(df$porcentaje==70,4.460114,
+                                                                      ifelse(df$porcentaje==60,3.869665,
+                                                                             ifelse(df$porcentaje==50,3.074220,NA)))))))
   
   df%<>% mutate(wind_power_pared = 0.5*1.2*0.27*0.45*(df$Vviento_estandar_pared)^3,
                 TSR_pared = RPM*2*pi*r/60/df$Vviento_estandar_pared,
@@ -536,150 +524,150 @@ ploteo_experimento_individual<- function(datos,grados,groups_ind){
   
   group_number<-length(attr(group_by(df,experimento,angulo), "group"))
   
+  
+  xx<- df %>% group_by(.,experimento,angulo) %>% select_groups(groups_ind)
+  nombre_1<-as.character(xx$experimento[1])
+  nombre_2<-as.character(xx$angulo[1])
+  nombre<-paste(nombre_1,nombre_2,sep = "_")
+  dir.create(paste0(here(),"/graficos_fit",grados,"_",nombre,"/"))
+  
+  percentaje_number<-length(attr(group_by(xx,porcentaje), "group") )
+  xx_percentaje_media<-list()
+  xx_percentaje_estandar<-list()
+  xx_percentaje_estandar_pared<-list()
+  xx_percentaje_lectura<-list()
+  for (per in 1:percentaje_number) {
+    xx_perc_m<- xx %>% group_by(.,porcentaje) %>% select_groups(per)
+    xx_perc_m<-cbind(xx_perc_m$cp_mean,xx_perc_m$TSR_mean,xx_perc_m$Vviento_media)
+    colnames(xx_perc_m)<- c("cp","TSR", "Vviento")
+    xx_percentaje_media[[per]]<- xx_perc_m
     
-    xx<- df %>% group_by(.,experimento,angulo) %>% select_groups(groups_ind)
-    nombre_1<-as.character(xx$experimento[1])
-    nombre_2<-as.character(xx$angulo[1])
-    nombre<-paste(nombre_1,nombre_2,sep = "_")
-    dir.create(paste0(here(),"/graficos_fit",grados,"_",nombre,"/"))
+    xx_perc_s<- xx %>% group_by(.,porcentaje) %>% select_groups(per)
+    xx_perc_s<-cbind(xx_perc_s$cp_est,xx_perc_s$TSR_est,xx_perc_s$Vviento_estandar)
+    colnames(xx_perc_s)<- c("cp","TSR", "Vviento")
+    xx_percentaje_estandar[[per]]<- xx_perc_s
     
-    percentaje_number<-length(attr(group_by(xx,porcentaje), "group") )
-    xx_percentaje_media<-list()
-    xx_percentaje_estandar<-list()
-    xx_percentaje_estandar_pared<-list()
-    xx_percentaje_lectura<-list()
-    for (per in 1:percentaje_number) {
-      xx_perc_m<- xx %>% group_by(.,porcentaje) %>% select_groups(per)
-      xx_perc_m<-cbind(xx_perc_m$cp_mean,xx_perc_m$TSR_mean,xx_perc_m$Vviento_media)
-      colnames(xx_perc_m)<- c("cp","TSR", "Vviento")
-      xx_percentaje_media[[per]]<- xx_perc_m
+    xx_perc_sp<- xx %>% group_by(.,porcentaje) %>% select_groups(per)
+    xx_perc_sp<-cbind(xx_perc_sp$cp_pared,xx_perc_sp$TSR_pared,xx_perc_sp$Vviento_estandar_pared)
+    colnames(xx_perc_sp)<- c("cp","TSR", "Vviento")
+    xx_percentaje_estandar_pared[[per]]<- xx_perc_sp
+    
+    xx_perc_l<- xx %>% group_by(.,porcentaje) %>% select_groups(per)
+    xx_perc_l<-cbind(xx_perc_l$cp,xx_perc_l$TSR,xx_perc_l$`m/s`)
+    colnames(xx_perc_l)<- c("cp","TSR", "Vviento")
+    xx_percentaje_lectura[[per]]<- xx_perc_l
+    
+  }
+  
+  xx_data<- list(xx_percentaje_estandar,xx_percentaje_estandar_pared,
+                 xx_percentaje_lectura,xx_percentaje_media)
+  names(xx_data)<- c("xx_percentaje_estandar","xx_percentaje_estandar_pared",
+                     "xx_percentaje_lectura","xx_percentaje_media")
+  for (ll in 1:length(xx_data)) {
+    lambda_Cp<- xx_data[[ll]]
+    lambda_Cp_clean<-list()
+    for(j in 1:length(lambda_Cp)){
+      cp_lmb<- lambda_Cp[[j]]
+      cp_lmb<-cp_lmb[order(cp_lmb[,2]),]
       
-      xx_perc_s<- xx %>% group_by(.,porcentaje) %>% select_groups(per)
-      xx_perc_s<-cbind(xx_perc_s$cp_est,xx_perc_s$TSR_est,xx_perc_s$Vviento_estandar)
-      colnames(xx_perc_s)<- c("cp","TSR", "Vviento")
-      xx_percentaje_estandar[[per]]<- xx_perc_s
       
-      xx_perc_sp<- xx %>% group_by(.,porcentaje) %>% select_groups(per)
-      xx_perc_sp<-cbind(xx_perc_sp$cp_pared,xx_perc_sp$TSR_pared,xx_perc_sp$Vviento_estandar_pared)
-      colnames(xx_perc_sp)<- c("cp","TSR", "Vviento")
-      xx_percentaje_estandar_pared[[per]]<- xx_perc_sp
+      TSR_1<-cp_lmb[,2]
+      Cp_1<-cp_lmb[,1]
       
-      xx_perc_l<- xx %>% group_by(.,porcentaje) %>% select_groups(per)
-      xx_perc_l<-cbind(xx_perc_l$cp,xx_perc_l$TSR,xx_perc_l$`m/s`)
-      colnames(xx_perc_l)<- c("cp","TSR", "Vviento")
-      xx_percentaje_lectura[[per]]<- xx_perc_l
+      V_tsr<- seq(0.05,max(TSR_1),by=max(TSR_1)/8)
+      TSR_2<- vector()
+      Cp_2<- vector()
+      
+      for(i in 1:length(V_tsr)){
+        
+        Cp_2[i]<- Cp_1[which.min(abs(TSR_1-V_tsr[i]))]
+        TSR_2[i]<-TSR_1[which.min(abs(TSR_1-V_tsr[i]))]
+        
+      }
+      validacion<-cbind(unique(Cp_2),unique(TSR_2))
+      validacion_1<- validacion[1:which.max(validacion[,1]),]
+      validacion_2<- validacion[(which.max(validacion[,1])+1):length(validacion[,1]),]
+      indeeex<- vector()
+      rr<- 1 
+      if(length(validacion_2)==2){
+        validacion_2<- validacion_2
+      }else{
+        for (i in 1:length(validacion_2[,1])) {
+          
+          
+          if(i==length(validacion_2[,1])){break}else{
+            
+            if(validacion_2[i,1] < validacion_2[(i+1),1]){
+              indeeex[rr]<- as.numeric(i) 
+              rr<-rr+1
+              
+              
+            }
+            
+          }
+        }
+        
+      }
+      
+      if(length(indeeex)==0){
+        validacion_2<- validacion_2
+      }else{
+        validacion_2<-validacion_2[-indeeex,]
+      }
+      
+      clean_table<-rbind(validacion_1,validacion_2)
+      
+      
+      lambda_Cp_clean[[j]]<- clean_table
       
     }
     
-    xx_data<- list(xx_percentaje_estandar,xx_percentaje_estandar_pared,
-                   xx_percentaje_lectura,xx_percentaje_media)
-    names(xx_data)<- c("xx_percentaje_estandar","xx_percentaje_estandar_pared",
-                                  "xx_percentaje_lectura","xx_percentaje_media")
-    for (ll in 1:length(xx_data)) {
-      lambda_Cp<- xx_data[[ll]]
-      lambda_Cp_clean<-list()
-      for(j in 1:length(lambda_Cp)){
-        cp_lmb<- lambda_Cp[[j]]
-        cp_lmb<-cp_lmb[order(cp_lmb[,2]),]
-        
-        
-        TSR_1<-cp_lmb[,2]
-        Cp_1<-cp_lmb[,1]
-        
-        V_tsr<- seq(0.05,max(TSR_1),by=max(TSR_1)/8)
-        TSR_2<- vector()
-        Cp_2<- vector()
-        
-        for(i in 1:length(V_tsr)){
-          
-          Cp_2[i]<- Cp_1[which.min(abs(TSR_1-V_tsr[i]))]
-          TSR_2[i]<-TSR_1[which.min(abs(TSR_1-V_tsr[i]))]
-          
-        }
-        validacion<-cbind(unique(Cp_2),unique(TSR_2))
-        validacion_1<- validacion[1:which.max(validacion[,1]),]
-        validacion_2<- validacion[(which.max(validacion[,1])+1):length(validacion[,1]),]
-        indeeex<- vector()
-        rr<- 1 
-        if(length(validacion_2)==2){
-          validacion_2<- validacion_2
-        }else{
-          for (i in 1:length(validacion_2[,1])) {
-            
-            
-            if(i==length(validacion_2[,1])){break}else{
-              
-              if(validacion_2[i,1] < validacion_2[(i+1),1]){
-                indeeex[rr]<- as.numeric(i) 
-                rr<-rr+1
-                
-                
-              }
-              
-            }
-          }
-          
-        }
-        
-        if(length(indeeex)==0){
-          validacion_2<- validacion_2
-        }else{
-          validacion_2<-validacion_2[-indeeex,]
-        }
-        
-        clean_table<-rbind(validacion_1,validacion_2)
-        
-        
-        lambda_Cp_clean[[j]]<- clean_table
-        
-      }
+    
+    #jpeg(paste0(here(),"/graficos_fit",grados,"_",nombre,"/",names(xx_data)[[ll]],".jpeg"))
+    tiff(paste0(here(),"/graficos_fit",grados,"_",nombre,"/",names(xx_data)[[ll]],".tiff"), width = 7, height =7, units = 'in', res = 300)
+    
+    
+    
+    lambda_Cp<- lambda_Cp_clean
+    colores<- c("orange","red","blue","dodgerblue4","purple","black")
+    pch_dif<-c(0:5)
+    ###establecemos xlim e ylim
+    lim_y<- (max(unlist(lapply(xx_data[[ll]],"[",,1))) + (0.02))
+    lim_x<- (max(unlist(lapply(xx_data[[ll]],"[",,2)))+ (0.2))
+    
+    
+    for(i in 1:length(lambda_Cp)){
+      #en caso de que sea mejor añadir el origen
+      #x<- c(0,lambda_Cp[[i]][,2])
+      #y<- c(0,lambda_Cp[[i]][,1])
+      x<- lambda_Cp[[i]][,2]
+      y<- lambda_Cp[[i]][,1]
+      fit5<-lm(y~poly(x,grados,raw=TRUE))
+      xx <- seq(min(x),max(x), by=0.01)
       
-      
-      #jpeg(paste0(here(),"/graficos_fit",grados,"_",nombre,"/",names(xx_data)[[ll]],".jpeg"))
-      tiff(paste0(here(),"/graficos_fit",grados,"_",nombre,"/",names(xx_data)[[ll]],".tiff"), width = 7, height =7, units = 'in', res = 300)
-      
-      
-      
-      lambda_Cp<- lambda_Cp_clean
-      colores<- c("orange","red","blue","dodgerblue4","purple","black")
-      pch_dif<-c(0:5)
-      ###establecemos xlim e ylim
-      lim_y<- (max(unlist(lapply(xx_data[[ll]],"[",,1))) + (0.02))
-      lim_x<- (max(unlist(lapply(xx_data[[ll]],"[",,2)))+ (0.2))
-      
-      
-      for(i in 1:length(lambda_Cp)){
-        #en caso de que sea mejor añadir el origen
-        #x<- c(0,lambda_Cp[[i]][,2])
-        #y<- c(0,lambda_Cp[[i]][,1])
-        x<- lambda_Cp[[i]][,2]
-        y<- lambda_Cp[[i]][,1]
-        fit5<-lm(y~poly(x,grados,raw=TRUE))
-        xx <- seq(min(x),max(x), by=0.01)
-        
-        plot(NULL,xlim=c(0,lim_x),
-             ylim = c(0,lim_y),cex=0.005, yaxt ="n",
-             xlab = "TSR", ylab = "Cp", bty='L')
-        par(new=T)
-        lines(xx, predict(fit5, data.frame(x=xx)), col=colores[i],lwd=2)
-        cp_max<-max(predict(fit5, data.frame(x=xx)))
-        lambda_max<- xx[which.max(predict(fit5, data.frame(x=xx)))]
-        points(x,y, pch= pch_dif[i])
-        par(new=T)
-      }
-      
-      axis(2, at=seq(0,0.25, by=0.05),las=2)
-      V_viento<-sapply(xx_data[[ll]],"[",1,3)
-      
-      leyenda_veintos<-paste0(round(V_viento,digits = 2), " m/s")
-      orden_leyenda<-cbind(V_viento,leyenda_veintos,pch_dif,colores)
-      orden_leyenda<-orden_leyenda[order(as.numeric(orden_leyenda[,1]), decreasing = TRUE),]
-      
-      legend("topright", inset=c(0,0),orden_leyenda[,2],pch = as.numeric(orden_leyenda[,3]),
-             text.col = orden_leyenda[,4],ncol = 1,cex = 1)
-      
-      dev.off()
-      }
+      plot(NULL,xlim=c(0,lim_x),
+           ylim = c(0,lim_y),cex=0.005, yaxt ="n",
+           xlab = "TSR", ylab = "Cp", bty='L')
+      par(new=T)
+      lines(xx, predict(fit5, data.frame(x=xx)), col=colores[i],lwd=2)
+      cp_max<-max(predict(fit5, data.frame(x=xx)))
+      lambda_max<- xx[which.max(predict(fit5, data.frame(x=xx)))]
+      points(x,y, pch= pch_dif[i])
+      par(new=T)
+    }
+    
+    axis(2, at=seq(0,0.25, by=0.05),las=2)
+    V_viento<-sapply(xx_data[[ll]],"[",1,3)
+    
+    leyenda_veintos<-paste0(round(V_viento,digits = 2), " m/s")
+    orden_leyenda<-cbind(V_viento,leyenda_veintos,pch_dif,colores)
+    orden_leyenda<-orden_leyenda[order(as.numeric(orden_leyenda[,1]), decreasing = TRUE),]
+    
+    legend("topright", inset=c(0,0),orden_leyenda[,2],pch = as.numeric(orden_leyenda[,3]),
+           text.col = orden_leyenda[,4],ncol = 1,cex = 1)
+    
+    dev.off()
+  }
 }
 ajuste_RPM_Resistencia<- function(df){
   group_number<-length(attr(group_by(df,experimento,angulo,porcentaje), "group"))
@@ -807,19 +795,19 @@ ajuste_RPM_Resistencia_so<- function(df,tabla_sinout){
       return(nlsLM(y_so~a*x_so/(b+x_so)))
     }
     m_so<-tryCatch(m_so_1(y_so,x_so), error=function(e) m_so_2(y_so,x_so))
-
+    
     
     
     
     coefa_so<-coef(m_so)[1]
-  coefb_so<- coef(m_so)[2]
-  x_so_seq<- seq(0,8000,by=1)
-  y_so_seq<- coefa_so*x_so_seq/(coefb_so+x_so_seq)
-  
-  coefa <-coef(m)[1]
-  coefb <- coef(m)[2]
-  x_seq<- seq(0,8000,by=1)
-  y_seq<- coefa*x_seq/(coefb+x_seq)
+    coefb_so<- coef(m_so)[2]
+    x_so_seq<- seq(0,8000,by=1)
+    y_so_seq<- coefa_so*x_so_seq/(coefb_so+x_so_seq)
+    
+    coefa <-coef(m)[1]
+    coefb <- coef(m)[2]
+    x_seq<- seq(0,8000,by=1)
+    y_seq<- coefa*x_seq/(coefb+x_seq)
     
     
     
@@ -837,16 +825,16 @@ ajuste_RPM_Resistencia_so<- function(df,tabla_sinout){
     
     points(x_so,y_so, pch= 4, col="blue")
     
-   
     
-     x_dif<-length(setdiff(x, x_so))
+    
+    x_dif<-length(setdiff(x, x_so))
     y_dif<-length(setdiff(round(y,r),round(y_so,r)))
-  
+    
     
     while(x_dif != y_dif){
       y_dif<-length(setdiff(round(y,r),round(y_so,r)))
       r<-r+1}
-  
+    
     
     if(x_dif==y_dif){
       points(setdiff(x, x_so),setdiff(round(y,r),round(y_so,r)), pch=20, col="red", cex=1.5)
@@ -865,36 +853,36 @@ ajuste_RPM_Resistencia_so<- function(df,tabla_sinout){
     title(main = maintitle)
     
     R_sinVA<- paste0("Regresión sin VA"," (Correlación= ",as.character(round(cor(y_so,predict(m_so)),3)),")")
-    R_conVA<- paste0("Regresión con VA"," (Correlación= ",as.character(round(cor(y,predict(m)),3)),")")
+    R_conVA<- paste0("Regresión sin VA"," (Correlación= ",as.character(round(cor(y,predict(m)),3)),")")
     
-
+    
     legend("right", inset=c(0,0),
            legend = c(R_sinVA,R_conVA,"Valores comunes", "Valores atípicos "),
            pch = c(NA,NA, 4,20),
            lty = c(2,2,NA,NA), 
            col = c("blue","red","black","red"),ncol = 1,cex = 1)
     
-        dev.off()
-        
-        correlacion_sino<-cor(y_so,predict(m_so))
-        correlacion_cono<-cor(y,predict(m))
-        if(correlacion_sino>= correlacion_cono){
-          aa<- coefa_so
-          bb<- coefb_so
-        }else{
-          aa<- coefa
-          bb<-coefb
-        }
-        
-        coef_tabla<- cbind(as.character(tabladenombres[pruebas,1]),as.character(tabladenombres[pruebas,2]),
-                           as.character(tabladenombres[pruebas,3]),aa,bb)  
-        names(coef_tabla)<-c("Experimento","Angulo","Porcentaje","a","b")
-        
-      lista_coef[[pruebas]]<-coef_tabla
-        
+    dev.off()
+    
+    correlacion_sino<-cor(y_so,predict(m_so))
+    correlacion_cono<-cor(y,predict(m))
+    if(correlacion_sino>= correlacion_cono){
+      aa<- coefa_so
+      bb<- coefb_so
+    }else{
+      aa<- coefa
+      bb<-coefb
+    }
+    
+    coef_tabla<- cbind(as.character(tabladenombres[pruebas,1]),as.character(tabladenombres[pruebas,2]),
+                       as.character(tabladenombres[pruebas,3]),aa,bb)  
+    names(coef_tabla)<-c("Experimento","Angulo","Porcentaje","a","b")
+    
+    lista_coef[[pruebas]]<-coef_tabla
+    
   }
-
- return(lista_coef) 
+  
+  return(lista_coef) 
   
 }
 add_coef<-function(df,coeficientes_RPM){
@@ -916,16 +904,13 @@ add_coef<-function(df,coeficientes_RPM){
   
   df %<>% mutate(RPM_regresion= (as.numeric(as.character(coef_a)) *as.numeric(as.character(resistencia)))/(as.numeric(as.character(coef_b))+as.numeric(as.character(resistencia))))
   df %<>% mutate(diff_rpm=RPM-RPM_regresion, TSR_regresion_est = RPM_regresion*2*pi*r/60/Vviento_estandar,TSR_regresion_lectura = RPM_regresion*2*pi*r/60/`m/s`)
-  df %<>% mutate(TSR_regresion_corr = RPM_regresion*2*pi*r/60/V_viento_correcion)
-  
-  
-   }
+}
 
 
-    
+
 
 ##### ploteos de TSR_CP empleando los valores de TSR de la regresion   
-    
+
 ploteo_experimento_estandar_RPM_regresion<- function(datos,grados){
   df<-datos
   select_groups <- function(data, groups) {
@@ -1033,7 +1018,7 @@ ploteo_experimento_estandar_RPM_regresion<- function(datos,grados){
     lambda_Cp<- lambda_Cp_clean
     colores<- c("orange","red","blue","dodgerblue4","purple","black")
     pch_dif<-c(0:5)
-
+    
     for(i in 1:length(lambda_Cp)){
       #en caso de que sea mejor añadir el origen
       #x<- c(0,lambda_Cp[[i]][,2])
@@ -1048,7 +1033,7 @@ ploteo_experimento_estandar_RPM_regresion<- function(datos,grados){
            xlab = "TSR", ylab = "Cp", bty='L')
       par(new=T)
       lines(xx, predict(fit5, data.frame(x=xx)), col=colores[i],lwd=2)
-   
+      
       points(x,y, pch= pch_dif[i])
       par(new=T)
     }
@@ -1210,9 +1195,12 @@ ploteo_experimento_lectura_RPM_regresion<- function(datos,grados){
   }
   
 }
-ploteo_experimento_corr_RPM_regresion<- function(datos,grados){
+ploteo_experimento_media_RPM_regresion<- function(datos,grados){
   df<-datos
-  
+  df%<>% mutate(Vviento_media = (df$`m/s`+df$Vviento_estandar)/2)
+  df%<>% mutate(wind_power_mean = 0.5*1.2*0.27*0.45*(df$Vviento_media)^3,
+                TSR_mean = RPM_regresion*2*pi*r/60/df$Vviento_media,
+                cp_mean = watts/wind_power_mean)
   select_groups <- function(data, groups) {
     data[sort(unlist(attr(data, "indices")[ groups ])) + 1, ]
   }
@@ -1225,17 +1213,12 @@ ploteo_experimento_corr_RPM_regresion<- function(datos,grados){
     nombre_2<-as.character(xx$angulo[1])
     nombre<-paste(nombre_1,nombre_2,sep = "_")
     
-    if(is.na(nombre_2)){
-      nombre_grafica<- nombre_1
-    }else{
-      nombre_grafica<-paste(nombre_1," ",nombre_2,"º",sep = "")
-    }
     
     percentaje_number<-length(attr(group_by(xx,porcentaje), "group") )
     xx_percentaje<-list()
     for (per in 1:percentaje_number) {
       xx_perc<- xx %>% group_by(.,porcentaje) %>% select_groups(per)
-      xx_perc<-cbind(xx_perc$cp_correc,xx_perc$TSR_regresion_corr,xx_perc$V_viento_correcion)
+      xx_perc<-cbind(xx_perc$cp_mean,xx_perc$TSR_mean,xx_perc$Vviento_media)
       colnames(xx_perc)<- c("cp","TSR", "Vviento")
       xx_percentaje[[per]]<- xx_perc
       
@@ -1308,10 +1291,10 @@ ploteo_experimento_corr_RPM_regresion<- function(datos,grados){
     
     
     
-    dir.create(paste0(here(),"/graficos_RPMreg_corr_fit",grados,"/"))
+    dir.create(paste0(here(),"/graficos_RPMreg_media_fit",grados,"/"))
     
     #jpeg(paste0(here(),"/graficos_RPMreg_media_fit",grados,"/",nombre,".jpeg"))
-    tiff(paste0(here(),"/graficos_RPMreg_corr_fit",grados,"/",nombre,".tiff"), width = 7, height =7, units = 'in', res = 300)
+    tiff(paste0(here(),"/graficos_RPMreg_media_fit",grados,"/",nombre,".tiff"), width = 7, height =7, units = 'in', res = 300)
     
     
     
@@ -1350,17 +1333,13 @@ ploteo_experimento_corr_RPM_regresion<- function(datos,grados){
     legend("topright", inset=c(0,0),orden_leyenda[,2],pch = as.numeric(orden_leyenda[,3]),
            text.col = orden_leyenda[,4],ncol = 1,cex = 1)
     
-    subtitle_nom<- paste0("Experimento = ",nombre_grafica)
-    maintitle<- paste0("Gráfica CP-TSR \n",subtitle_nom)
-    title(main = maintitle)
-    
     dev.off()
     
   }
   
 }
 
-    
+
 ## Ploteos CP_TSR uniendo los puntos de CP_max
 
 ploteo_experimento_estandar_RPM_regresion_CPmax<- function(datos,grados){
@@ -1388,7 +1367,7 @@ ploteo_experimento_estandar_RPM_regresion_CPmax<- function(datos,grados){
     xx_percentaje<-list()
     for (per in 1:percentaje_number) {
       xx_perc<- xx %>% group_by(.,porcentaje) %>% select_groups(per)
-      xx_perc<-cbind(xx_perc$cp_correc,xx_perc$TSR_regresion_corr,xx_perc$V_viento_correcion)
+      xx_perc<-cbind(xx_perc$cp_est,xx_perc$TSR_regresion_est,xx_perc$Vviento_estandar)
       colnames(xx_perc)<- c("cp","TSR", "Vviento")
       xx_percentaje[[per]]<- xx_perc
       
@@ -1480,7 +1459,7 @@ ploteo_experimento_estandar_RPM_regresion_CPmax<- function(datos,grados){
       xx <- seq(min(x),max(x), by=0.01)
       
       plot(NULL,xlim=c(0,2),
-           ylim = c(0,0.20),cex=0.005, yaxt ="n",
+           ylim = c(0,0.10),cex=0.005, yaxt ="n",
            xlab = "TSR", ylab = "Cp", bty='L')
       par(new=T)
       lines(xx, predict(fit5, data.frame(x=xx)), col=colores[i],lwd=2)
@@ -1490,7 +1469,7 @@ ploteo_experimento_estandar_RPM_regresion_CPmax<- function(datos,grados){
       par(new=T)
     }
     
-    axis(2, at=seq(0,0.2, by=0.02),las=2)
+    axis(2, at=seq(0,0.1, by=0.02),las=2)
     V_viento<-sapply(xx_percentaje,"[",1,3)
     
     leyenda_veintos<-paste0(round(V_viento,digits = 2), " m/s")
@@ -1501,8 +1480,8 @@ ploteo_experimento_estandar_RPM_regresion_CPmax<- function(datos,grados){
            text.col = orden_leyenda[,4],ncol = 1,cex = 1)
     
     tabla_CPmax<-data.frame(matrix(unlist(lista_Cpmax), 
-                      nrow=length(lista_Cpmax), 
-                      byrow=T),stringsAsFactors=FALSE)
+                                   nrow=length(lista_Cpmax), 
+                                   byrow=T),stringsAsFactors=FALSE)
     tabla_CPmax<-rbind(tabla_CPmax)
     names(tabla_CPmax)<- c("TSR","Cp")
     tabla_CPmax<- tabla_CPmax[order(tabla_CPmax[,1]),]
@@ -1546,147 +1525,141 @@ ploteo_experimento_estandar_RPM_regresion_CPmax<- function(datos,grados){
 
 
 ## Elaboracion Grafica Potencia_m/s y devuelve los coeficientes
-##de la regresion. V es para seleccionar entre velocidad medida (`m/s`) o velocidad estandar (Vviento_estandar)
-grafica_Potencia_V<-function(df,xlimite,ylimite,V){
-select_groups <- function(data, groups) {
-  data[sort(unlist(attr(data, "indices")[ groups ])) + 1, ]
-}
-
-group_number<-length(attr(group_by(df,experimento,angulo), "group"))
-lista_watts_Vviento<- list()
-nombres_expr<-vector()
-for (groups_ind in 1:group_number) {
-  
-  xx<- df %>% group_by(.,experimento,angulo) %>% select_groups(groups_ind)
-  nombre_1<-as.character(xx$experimento[1])
-  nombre_2<-as.character(xx$angulo[1])
-  nombre<-paste(nombre_1,nombre_2,sep = "_")
-
-  
-  percentaje_number<-length(attr(group_by(xx,porcentaje), "group") )
-  xx_percentaje<-list()
-  for (per in 1:percentaje_number) {
-    xx_perc<- xx %>% group_by(.,porcentaje) %>% select_groups(per)
-    V_select<- as.name(paste0("xx_perc$",V))
-    
-    if(V==1){
-      xx_perc<-cbind(xx_perc$cp_est,xx_perc$watts,xx_perc$V_viento_correcion)
-    }else{
-      xx_perc<-cbind(xx_perc$cp_est,xx_perc$watts,xx_perc$Vviento_estandar)
-    }
-    colnames(xx_perc)<- c("cp","watts", "Vviento")
-    xx_percentaje[[per]]<- xx_perc
-    
+##de la regresion. 
+grafica_Potencia_V<-function(df,xlimite,ylimite){
+  select_groups <- function(data, groups) {
+    data[sort(unlist(attr(data, "indices")[ groups ])) + 1, ]
   }
-  lista_watts_Vviento[[groups_ind]]<- xx_percentaje
-  nombres_expr[groups_ind]<- nombre
-}
-
-names(lista_watts_Vviento)<- nombres_expr
-
-lista_watts_Vviento_max<-list()
-for (i in 1:length(lista_watts_Vviento)) {
   
-  df_watts_Vviento<- data.frame(matrix(unlist(lapply(lista_watts_Vviento[[i]],
-                                                     function(x) x[which.max(x[,1]),2:3])),
-                                       nrow=6, byrow=T))
-  names(df_watts_Vviento)<- c("Watss","Vviento")
-  lista_watts_Vviento_max[[i]]<- df_watts_Vviento
-}
-names(lista_watts_Vviento_max)<- nombres_expr
-
-dir.create(paste0(here(),"/graficos_Potencia_V/"))
-
-#jpeg(paste0(here(),"/graficos_Potencia_V/grafica_Potencia_V.jpeg"))
-tiff(paste0(here(),"/graficos_Potencia_V/grafica_Potencia_V.tiff"), width = 7, height =7, units = 'in', res = 300)
-
-
-colores<- c("orange","red","blue","dodgerblue4","purple","black")
-pch_dif<-c(0:5)
-correlacion<- vector()
-lista_coef<-list()
-for(i in 1:length(lista_watts_Vviento_max)){
-  #en caso de que sea mejor añadir el origen
-  #x<- c(0,lambda_Cp[[i]][,2])
-  #y<- c(0,lambda_Cp[[i]][,1])
-  x<- lista_watts_Vviento_max[[i]][,2]
-  y<- lista_watts_Vviento_max[[i]][,1]
-  fit_curva<-nls(y~b+a*x^3,start = list(a=0, b=0))
-  xx <- seq(min(x),xlimite[2], by=0.1)
-  
-  plot(NULL,xlim=xlimite,
-       ylim = ylimite,cex=0.005, yaxt ="n",
-       xlab = "Velocidad del viento (m/s)", ylab = "Potencia (W)", bty='L')
-  title(main= "Curvas de potencia")
-  par(new=T)
-  lines(xx, predict(fit_curva, data.frame(x=xx)), col=colores[i],lwd=1,lty=2)
-  points(x,y, pch= pch_dif[i])
-  par(new=T)
-  correlacion[i]<- cor(y,predict(fit_curva))
-  lista_coef[[i]]<- coef(fit_curva)
-}
-
-axis(2, at=seq(0,ylimite[2], by=round(ylimite[2]/7,0)),las=2)
-
-titulos_graficos<-function(df){
-  group_number<-length(attr(group_by(df,experimento,angulo,porcentaje), "group"))
-  lista_rpm_resistencia<- list()
-  nombres_lista<- vector()
-  titulos_grafico<- vector()
-  tabladenombres<- matrix(-31,ncol = 3, nrow = group_number)
-  for (grupos in 1:group_number) {
-    grupos_rpm_resistencia<- df %>% group_by(.,experimento,angulo,porcentaje) %>% select_groups(grupos)
-    
-    tabla_resistencia_rpm<- as.data.frame(cbind(as.numeric(grupos_rpm_resistencia$RPM),as.data.frame(grupos_rpm_resistencia$resistencia)))
-    colnames(tabla_resistencia_rpm)<- c("RPM", "Omhnios")
-    
-    nombre_tabla<- unique(paste(grupos_rpm_resistencia$experimento,grupos_rpm_resistencia$angulo,grupos_rpm_resistencia$porcentaje,sep = "_"))
-    
-    if(is.na(grupos_rpm_resistencia$angulo)){
-      titulo_graph<- unique(paste0(grupos_rpm_resistencia$experimento))
-    }else{
-      titulo_graph<- unique(paste0(grupos_rpm_resistencia$experimento,"-",grupos_rpm_resistencia$angulo,"º"))
-    }
-    titulos_grafico[grupos]<- titulo_graph
-    lista_rpm_resistencia[[grupos]]<- tabla_resistencia_rpm
-    nombres_lista[grupos]<- nombre_tabla
-    tabladenombres[grupos,1]<-as.character(grupos_rpm_resistencia$experimento[1])
-    tabladenombres[grupos,2]<- as.character(grupos_rpm_resistencia$angulo[1])
-    tabladenombres[grupos,3]<- as.character(grupos_rpm_resistencia$porcentaje[1])
-  }
-  return(unique(titulos_grafico))
-  
-}
-nombres_df<- titulos_graficos(df)
-
-
-leyenda<- paste0(nombres_df," (Cor= ",round(correlacion,4),")")
-
-legend("topleft",y.intersp = 0.75,seg.len = 0.9,
-       bty="n", bg="transparent",inset=c(0,0),
-       legend = leyenda,lty = c(2,2,2,2,2),lwd = c(2,2,2,2,2),col = colores[1:5],ncol = 1,cex = 1)
-dev.off()
-
-tabladenombress<-function(df){
   group_number<-length(attr(group_by(df,experimento,angulo), "group"))
-  tabladenombres<- matrix(-31,ncol = 2, nrow = group_number)
-  for (grupos in 1:group_number) {
-    grupos_rpm_resistencia<- df %>% group_by(.,experimento,angulo) %>% select_groups(grupos)
-    tabladenombres[grupos,1]<-as.character(grupos_rpm_resistencia$experimento[1])
-    tabladenombres[grupos,2]<- as.character(grupos_rpm_resistencia$angulo[1])
+  lista_watts_Vviento<- list()
+  nombres_expr<-vector()
+  for (groups_ind in 1:group_number) {
+    
+    xx<- df %>% group_by(.,experimento,angulo) %>% select_groups(groups_ind)
+    nombre_1<-as.character(xx$experimento[1])
+    nombre_2<-as.character(xx$angulo[1])
+    nombre<-paste(nombre_1,nombre_2,sep = "_")
+    
+    
+    percentaje_number<-length(attr(group_by(xx,porcentaje), "group") )
+    xx_percentaje<-list()
+    for (per in 1:percentaje_number) {
+      xx_perc<- xx %>% group_by(.,porcentaje) %>% select_groups(per)
+      xx_perc<-cbind(xx_perc$cp_est,xx_perc$watts,xx_perc$Vviento_estandar)
+      colnames(xx_perc)<- c("cp","watts", "Vviento")
+      xx_percentaje[[per]]<- xx_perc
+      
+    }
+    lista_watts_Vviento[[groups_ind]]<- xx_percentaje
+    nombres_expr[groups_ind]<- nombre
   }
-  return(as.data.frame(tabladenombres))
-}
-
-tablanombres<-tabladenombress(df)
-
-coeficientes_P_V<-data.frame(matrix(unlist(lista_coef),nrow=5, byrow=T))
-
-coef_tabla<- cbind(tablanombres,coeficientes_P_V) 
-names(coef_tabla)<-c("Experimento","Angulo","a","b")
-
-return(coef_tabla)
-
+  
+  names(lista_watts_Vviento)<- nombres_expr
+  
+  lista_watts_Vviento_max<-list()
+  for (i in 1:length(lista_watts_Vviento)) {
+    
+    df_watts_Vviento<- data.frame(matrix(unlist(lapply(lista_watts_Vviento[[i]],
+                                                       function(x) x[which.max(x[,1]),2:3])),
+                                         nrow=6, byrow=T))
+    names(df_watts_Vviento)<- c("Watss","Vviento")
+    lista_watts_Vviento_max[[i]]<- df_watts_Vviento
+  }
+  names(lista_watts_Vviento_max)<- nombres_expr
+  
+  dir.create(paste0(here(),"/graficos_Potencia_V/"))
+  
+  #jpeg(paste0(here(),"/graficos_Potencia_V/grafica_Potencia_V.jpeg"))
+  tiff(paste0(here(),"/graficos_Potencia_V/grafica_Potencia_V.tiff"), width = 7, height =7, units = 'in', res = 300)
+  
+  
+  colores<- c("orange","red","blue","dodgerblue4","purple","black")
+  pch_dif<-c(0:5)
+  correlacion<- vector()
+  lista_coef<-list()
+  for(i in 1:length(lista_watts_Vviento_max)){
+    #en caso de que sea mejor añadir el origen
+    #x<- c(0,lambda_Cp[[i]][,2])
+    #y<- c(0,lambda_Cp[[i]][,1])
+    x<- lista_watts_Vviento_max[[i]][,2]
+    y<- lista_watts_Vviento_max[[i]][,1]
+    fit_curva<-nls(y~b+a*x^3,start = list(a=0, b=0))
+    xx <- seq(min(x),xlimite[2], by=0.1)
+    
+    plot(NULL,xlim=xlimite,
+         ylim = ylimite,cex=0.005, yaxt ="n",
+         xlab = "Velocidad del viento (m/s)", ylab = "Potencia (W)", bty='L')
+    title(main= "Curvas de potencia")
+    par(new=T)
+    lines(xx, predict(fit_curva, data.frame(x=xx)), col=colores[i],lwd=1,lty=2)
+    points(x,y, pch= pch_dif[i])
+    par(new=T)
+    correlacion[i]<- cor(y,predict(fit_curva))
+    lista_coef[[i]]<- coef(fit_curva)
+  }
+  
+  axis(2, at=seq(0,ylimite[2], by=round(ylimite[2]/7,0)),las=2)
+  
+  titulos_graficos<-function(df){
+    group_number<-length(attr(group_by(df,experimento,angulo,porcentaje), "group"))
+    lista_rpm_resistencia<- list()
+    nombres_lista<- vector()
+    titulos_grafico<- vector()
+    tabladenombres<- matrix(-31,ncol = 3, nrow = group_number)
+    for (grupos in 1:group_number) {
+      grupos_rpm_resistencia<- df %>% group_by(.,experimento,angulo,porcentaje) %>% select_groups(grupos)
+      
+      tabla_resistencia_rpm<- as.data.frame(cbind(as.numeric(grupos_rpm_resistencia$RPM),as.data.frame(grupos_rpm_resistencia$resistencia)))
+      colnames(tabla_resistencia_rpm)<- c("RPM", "Omhnios")
+      
+      nombre_tabla<- unique(paste(grupos_rpm_resistencia$experimento,grupos_rpm_resistencia$angulo,grupos_rpm_resistencia$porcentaje,sep = "_"))
+      
+      if(is.na(grupos_rpm_resistencia$angulo)){
+        titulo_graph<- unique(paste0(grupos_rpm_resistencia$experimento))
+      }else{
+        titulo_graph<- unique(paste0(grupos_rpm_resistencia$experimento,"-",grupos_rpm_resistencia$angulo,"º"))
+      }
+      titulos_grafico[grupos]<- titulo_graph
+      lista_rpm_resistencia[[grupos]]<- tabla_resistencia_rpm
+      nombres_lista[grupos]<- nombre_tabla
+      tabladenombres[grupos,1]<-as.character(grupos_rpm_resistencia$experimento[1])
+      tabladenombres[grupos,2]<- as.character(grupos_rpm_resistencia$angulo[1])
+      tabladenombres[grupos,3]<- as.character(grupos_rpm_resistencia$porcentaje[1])
+    }
+    return(unique(titulos_grafico))
+    
+  }
+  nombres_df<- titulos_graficos(df)
+  
+  
+  leyenda<- paste0(nombres_df," (Cor= ",round(correlacion,4),")")
+  
+  legend("topleft",y.intersp = 0.75,seg.len = 0.9,
+         bty="n", bg="transparent",inset=c(0,0),
+         legend = leyenda,lty = c(2,2,2,2,2),lwd = c(2,2,2,2,2),col = colores[1:5],ncol = 1,cex = 1)
+  dev.off()
+  
+  tabladenombress<-function(df){
+    group_number<-length(attr(group_by(df,experimento,angulo), "group"))
+    tabladenombres<- matrix(-31,ncol = 2, nrow = group_number)
+    for (grupos in 1:group_number) {
+      grupos_rpm_resistencia<- df %>% group_by(.,experimento,angulo) %>% select_groups(grupos)
+      tabladenombres[grupos,1]<-as.character(grupos_rpm_resistencia$experimento[1])
+      tabladenombres[grupos,2]<- as.character(grupos_rpm_resistencia$angulo[1])
+    }
+    return(as.data.frame(tabladenombres))
+  }
+  
+  tablanombres<-tabladenombress(df)
+  
+  coeficientes_P_V<-data.frame(matrix(unlist(lista_coef),nrow=5, byrow=T))
+  
+  coef_tabla<- cbind(tablanombres,coeficientes_P_V) 
+  names(coef_tabla)<-c("Experimento","Angulo","a","b")
+  
+  return(coef_tabla)
+  
 }
 
 
@@ -1742,7 +1715,7 @@ ploteo_CPmax10<- function(datos,grados){
     xx_percentaje<-list()
     for (per in 1:percentaje_number) {
       xx_perc<- xx %>% group_by(.,porcentaje) %>% select_groups(per)
-      xx_perc<-cbind(xx_perc$cp_alfa,xx_perc$TSR_alfa,xx_perc$V_viento_alfa)
+      xx_perc<-cbind(xx_perc$cp_est,xx_perc$TSR_regresion_est,xx_perc$Vviento_estandar)
       colnames(xx_perc)<- c("cp","TSR", "Vviento")
       xx_percentaje[[per]]<- xx_perc
       
@@ -1857,7 +1830,7 @@ ploteo_CPmax10<- function(datos,grados){
     legend("topright", inset=c(0,0),leyenda,
            text.col = colores,ncol = 1,cex = 1)
     
-    titulo<- paste0("Comparación de gráficas Cp-TSR \n con el túnel de viento al 100 %")
+    titulo<- paste0("Comparación de gráficas Cp-TSR a ",vector_nombre_vel[porcentaje],"m/s")
     title(main = titulo)
     
     dev.off()
@@ -1914,7 +1887,7 @@ RPM_por_porcentaje<-function(df){
     
     
     
-     plot(NULL, xlim = c(0,8000), ylim = c(0,y_lim),yaxt ="n",
+    plot(NULL, xlim = c(0,8000), ylim = c(0,y_lim),yaxt ="n",
          xlab =  expression(paste("Resistencia (",Omega,")")), 
          ylab = "Velocidad Angular (RPM)", bty='L')
     
@@ -1954,187 +1927,3 @@ RPM_por_porcentaje<-function(df){
   
   
 }
-
-
-
-
-
-
-
-grafica_Potencia_V_alfa<-function(df,xlimite,ylimite){
-  select_groups <- function(data, groups) {
-    data[sort(unlist(attr(data, "indices")[ groups ])) + 1, ]
-  }
-  
-  group_number<-length(attr(group_by(df,experimento,angulo), "group"))
-  lista_watts_Vviento_modelo<- list()
-  lista_watts_Vviento_prototipo<- list()
-  
-  nombres_expr<-vector()
-  for (groups_ind in 1:group_number) {
-    
-    xx<- df %>% group_by(.,experimento,angulo) %>% select_groups(groups_ind)
-    nombre_1<-as.character(xx$experimento[1])
-    nombre_2<-as.character(xx$angulo[1])
-    nombre<-paste(nombre_1,nombre_2,sep = "_")
-    
-    
-    percentaje_number<-length(attr(group_by(xx,porcentaje), "group") )
-    xx_percentaje_modelo<-list()
-    xx_percentaje_prototipo<-list()
-    
-    for (per in 1:percentaje_number) {
-      xx_perc<- xx %>% group_by(.,porcentaje) %>% select_groups(per)
-
-        xx_perc_modelo<-cbind(xx_perc$cp_est,xx_perc$watts,xx_perc$V_viento_correcion)
-        colnames(xx_perc_modelo)<- c("cp","watts", "Vviento")
-        xx_percentaje_modelo[[per]]<- xx_perc_modelo
-        
-      
-        xx_perc_prototipo<-cbind(xx_perc$cp_alfa,xx_perc$watts,xx_perc$V_viento_alfa)
-        colnames(xx_perc_prototipo)<- c("cp","watts", "Vviento")
-        xx_percentaje_prototipo[[per]]<- xx_perc_prototipo
-      
-      
-    }
-    lista_watts_Vviento_modelo[[groups_ind]]<- xx_percentaje_modelo
-    lista_watts_Vviento_prototipo[[groups_ind]]<- xx_percentaje_prototipo
-    
-    nombres_expr[groups_ind]<- nombre
-  }
-  
-  names(lista_watts_Vviento_modelo)<- nombres_expr
-  
-  lista_watts_Vviento_max_modelo<-list()
-  lista_watts_Vviento_max_prototipo<-list()
-  
-  for (i in 1:length(lista_watts_Vviento_modelo)) {
-    
-    df_watts_Vviento_modelo<- data.frame(matrix(unlist(lapply(lista_watts_Vviento_modelo[[i]],
-                                                       function(x) x[which.max(x[,1]),2:3])),
-                                         nrow=6, byrow=T))
-    names(df_watts_Vviento_modelo)<- c("Watss","Vviento")
-    lista_watts_Vviento_max_modelo[[i]]<- df_watts_Vviento_modelo
-    
-    df_watts_Vviento_prototipo<- data.frame(matrix(unlist(lapply(lista_watts_Vviento_prototipo[[i]],
-                                                              function(x) x[which.max(x[,1]),2:3])),
-                                                nrow=6, byrow=T))
-    names(df_watts_Vviento_modelo)<- c("Watss","Vviento")
-    lista_watts_Vviento_max_prototipo[[i]]<- df_watts_Vviento_prototipo
-    
-    
-  }
-  names(lista_watts_Vviento_max_modelo)<- nombres_expr
-  
-  dir.create(paste0(here(),"/graficos_Potencia_V/"))
-  
-  #jpeg(paste0(here(),"/graficos_Potencia_V/grafica_Potencia_V.jpeg"))
-  tiff(paste0(here(),"/graficos_Potencia_V/grafica_Potencia_V_comparativa.tiff"), width = 7, height =7, units = 'in', res = 300)
-  
-  
-  colores<- c("orange","red","blue","dodgerblue4","purple","black")
-  pch_dif<-c(0:5)
-  correlacion<- vector()
-  lista_coef_modelo<-list()
-  lista_coef_prototipo<-list()
-  for(i in 1:length(lista_watts_Vviento_max_modelo)){
-    #en caso de que sea mejor añadir el origen
-    #x<- c(0,lambda_Cp[[i]][,2])
-    #y<- c(0,lambda_Cp[[i]][,1])
-    x_modelo<- lista_watts_Vviento_max_modelo[[i]][,2]
-    y_modelo<- lista_watts_Vviento_max_modelo[[i]][,1]
-    fit_curva_modelo<-nls(y_modelo~b+a*x_modelo^3,start = list(a=0, b=0))
-    xx_modelo <- seq(min(x_modelo),xlimite[2], by=0.1)
-    
-    
-    x_prototipo<- lista_watts_Vviento_max_prototipo[[i]][,2]
-    y_prototipo<- lista_watts_Vviento_max_prototipo[[i]][,1]
-    fit_curva_prototipo<-nls(y_prototipo~b+a*x_prototipo^3,start = list(a=0, b=0))
-    xx_prototipo <- seq(min(x_prototipo),xlimite[2], by=0.1)
-    
-    
-    
-    
-    plot(NULL,xlim=xlimite,
-         ylim = ylimite,cex=0.005, yaxt ="n",
-         xlab = "Velocidad del viento (m/s)", ylab = "Potencia (W)", bty='L')
-    title(main= "Curvas de potencia")
-    par(new=T)
-    
-    lines(xx_modelo, predict(fit_curva_modelo, data.frame(x_modelo=xx_modelo)), col=colores[i],lwd=1,lty=2)
-    
-    lines(xx_prototipo, predict(fit_curva_prototipo, data.frame(x_prototipo=xx_prototipo)), col=colores[i],lwd=1,lty=1)
-    
-    
-    par(new=T)
-    lista_coef_modelo[[i]]<- coef(fit_curva_modelo)
-    lista_coef_prototipo[[i]]<- coef(fit_curva_prototipo)
-    
-  }
-  
-  axis(2, at=seq(0,ylimite[2], by=round(ylimite[2]/7,0)),las=2)
-  
-  titulos_graficos<-function(df){
-    group_number<-length(attr(group_by(df,experimento,angulo,porcentaje), "group"))
-    lista_rpm_resistencia<- list()
-    nombres_lista<- vector()
-    titulos_grafico<- vector()
-    tabladenombres<- matrix(-31,ncol = 3, nrow = group_number)
-    for (grupos in 1:group_number) {
-      grupos_rpm_resistencia<- df %>% group_by(.,experimento,angulo,porcentaje) %>% select_groups(grupos)
-      
-      tabla_resistencia_rpm<- as.data.frame(cbind(as.numeric(grupos_rpm_resistencia$RPM),as.data.frame(grupos_rpm_resistencia$resistencia)))
-      colnames(tabla_resistencia_rpm)<- c("RPM", "Omhnios")
-      
-      nombre_tabla<- unique(paste(grupos_rpm_resistencia$experimento,grupos_rpm_resistencia$angulo,grupos_rpm_resistencia$porcentaje,sep = "_"))
-      
-      if(is.na(grupos_rpm_resistencia$angulo)){
-        titulo_graph<- unique(paste0(grupos_rpm_resistencia$experimento))
-      }else{
-        titulo_graph<- unique(paste0(grupos_rpm_resistencia$experimento,"-",grupos_rpm_resistencia$angulo,"º"))
-      }
-      titulos_grafico[grupos]<- titulo_graph
-      lista_rpm_resistencia[[grupos]]<- tabla_resistencia_rpm
-      nombres_lista[grupos]<- nombre_tabla
-      tabladenombres[grupos,1]<-as.character(grupos_rpm_resistencia$experimento[1])
-      tabladenombres[grupos,2]<- as.character(grupos_rpm_resistencia$angulo[1])
-      tabladenombres[grupos,3]<- as.character(grupos_rpm_resistencia$porcentaje[1])
-    }
-    return(unique(titulos_grafico))
-    
-  }
-  nombres_df<- titulos_graficos(df)
-  
-  
-  leyenda<- paste0(nombres_df)
-  
-  legend("topleft",y.intersp = 0.75,seg.len = 1.2,
-         bty="n", bg="transparent",inset=c(0,0),
-         legend = leyenda,lty = c(1,1,1,1,1),lwd = c(2,2,2,2,2),col = colores[1:5],ncol = 1,cex = 1)
-  dev.off()
-  
-  tabladenombress<-function(df){
-    group_number<-length(attr(group_by(df,experimento,angulo), "group"))
-    tabladenombres<- matrix(-31,ncol = 2, nrow = group_number)
-    for (grupos in 1:group_number) {
-      grupos_rpm_resistencia<- df %>% group_by(.,experimento,angulo) %>% select_groups(grupos)
-      tabladenombres[grupos,1]<-as.character(grupos_rpm_resistencia$experimento[1])
-      tabladenombres[grupos,2]<- as.character(grupos_rpm_resistencia$angulo[1])
-    }
-    return(as.data.frame(tabladenombres))
-  }
-  
-  tablanombres<-tabladenombress(df)
-  
-  coeficientes_P_V_modelo<-data.frame(matrix(unlist(lista_coef_modelo),nrow=5, byrow=T))
-  coeficientes_P_V_prototipo<-data.frame(matrix(unlist(lista_coef_prototipo),nrow=5, byrow=T))
-  
-  coef_tabla<- cbind(tablanombres,coeficientes_P_V_prototipo) 
-  names(coef_tabla)<-c("Experimento","Angulo","a","b")
-  
-  return(coef_tabla)
-  
-}
-
-
-

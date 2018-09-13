@@ -111,7 +111,7 @@ coeficientes_Curva_P_V<- grafica_Potencia_V(df,limitex,limitey,2)
 coeficientes_Curva_P_V_medida<- grafica_Potencia_V(df,limitex,limitey,1)
 coeficientes_Curva_P_V_estandar<- grafica_Potencia_V(df,limitex,limitey,2)
 
-
+grafica_Potencia_V_alfa(df,limitex,limitey)
 ### Por defecto los coeficientes que se añaden a la tabla df son los coeficientes V_estandar
 
 #df<-add_coef_P_V(df,coeficientes_Curva_P_V)

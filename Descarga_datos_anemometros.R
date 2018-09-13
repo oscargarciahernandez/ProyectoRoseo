@@ -1,7 +1,7 @@
 library(here)
 
 
-source(here('funciones_app_anemometros.R'))
+source(here('funciones_app_anemometros.R'),encoding = 'UTF-8')
 
 
 
