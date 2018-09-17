@@ -42,8 +42,8 @@ df_mutate<-function(tabla_cruda){
   
   df%<>% mutate(V_viento_alfa= ifelse(df$experimento != "piloto", ((df$`m/s`)/0.7)/1.85,( df$`m/s`)/1.85))
   df%<>% mutate(wind_power_alfa = 0.5*1.2*0.50*0.45*(df$V_viento_alfa)^3,
-                TSR_alfa = RPM*2*pi*r/60/df$V_viento_alfa,
-                cp_alfa = watts/wind_power_alfa)
+                TSR_alfa = RPM*2*pi*r/60/df$V_viento_alfa,watts_alfa=watts/1.85,
+                cp_alfa = watts_alfa/wind_power_alfa)
   
   
   
@@ -1991,7 +1991,7 @@ grafica_Potencia_V_alfa<-function(df,xlimite,ylimite){
         xx_percentaje_modelo[[per]]<- xx_perc_modelo
         
       
-        xx_perc_prototipo<-cbind(xx_perc$cp_alfa,xx_perc$watts,xx_perc$V_viento_alfa)
+        xx_perc_prototipo<-cbind(xx_perc$cp_alfa,xx_perc$watts_alfa,xx_perc$V_viento_alfa)
         colnames(xx_perc_prototipo)<- c("cp","watts", "Vviento")
         xx_percentaje_prototipo[[per]]<- xx_perc_prototipo
       

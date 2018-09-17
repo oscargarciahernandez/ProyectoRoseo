@@ -230,12 +230,13 @@ group_number<-length(attr(group_by(df,experimento,angulo), "group"))
 
 coeficientes_Curva_P_V_medida<- grafica_Potencia_V(df,limitex,limitey,1)
 coeficientes_Curva_P_V_estandar<- grafica_Potencia_V(df,limitex,limitey,2)
+coeficientes_Curva_P_V_alfa<- grafica_Potencia_V_alfa(df,limitex,limitey)
 
 lista_energias<- list()
 
 
 for (i in 1:group_number) {
-  coefs_medido<- coeficientes_Curva_P_V_medida %>% group_by(., Experimento,Angulo) %>% select_groups(i)
+  coefs_medido<- coeficientes_Curva_P_V_alfa %>% group_by(., Experimento,Angulo) %>% select_groups(i)
   coefs_estandar<-  coeficientes_Curva_P_V_estandar %>% group_by(., Experimento,Angulo) %>% select_groups(i)
   
   Curva_de_potencia_medida<- coefs_medido$b+coefs_medido$a*V_viento^3
